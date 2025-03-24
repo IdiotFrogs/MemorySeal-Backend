@@ -21,6 +21,7 @@ public class TimeCapsuleService {
                 .createdAt(timeCapsuleCreateDto.getCreatedAt())
                 .updatedAt(timeCapsuleCreateDto.getUpdatedAt())
                 .timeCapsuleActiveStatus(timeCapsuleCreateDto.getTimeCapsuleActiveStatus())
+                .userId(timeCapsuleCreateDto.getUserId())
                 .build();
         return timeCapsuleJpaRepository.save(timeCapsule);
     }

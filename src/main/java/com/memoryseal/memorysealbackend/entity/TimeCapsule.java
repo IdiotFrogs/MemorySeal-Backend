@@ -43,6 +43,6 @@ public class TimeCapsule {
     private Boolean timeCapsuleActiveStatus;
 
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private Long userId;
 
 }

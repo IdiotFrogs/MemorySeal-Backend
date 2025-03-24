@@ -27,4 +27,6 @@ public class TimeCapsuleCreateDto {
 
     private Boolean timeCapsuleActiveStatus;
 
+    private Long userId;
+
 }
