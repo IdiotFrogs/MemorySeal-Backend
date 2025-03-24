@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDto {
+public class UserUpdateDto {
 
     private String nickname;
 
@@ -18,16 +18,12 @@ public class UserResponseDto {
 
     private String email;
 
-    /*public UserResponseDto(User user) {
-        this.nickname = user.getNickname();
-        this.profileUrl = user.getProfileUrl();
-        this.email = user.getEmail();
-    }*/
-    public static UserResponseDto toDto(User user) {
+
+    public static UserUpdateDto toDto(User user) {
         if (user == null) {
             return null;
         }else {
-            return UserResponseDto.builder()
+            return UserUpdateDto.builder()
                     .nickname(user.getNickname())
                     .profileUrl(user.getProfileUrl())
                     .email(user.getEmail())
@@ -36,4 +32,3 @@ public class UserResponseDto {
     }
 
 }
-

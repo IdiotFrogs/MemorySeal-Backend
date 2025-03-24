@@ -2,9 +2,16 @@ package com.memoryseal.memorysealbackend.entity;
 
 import com.memoryseal.memorysealbackend.enums.TimeCapsuleStatus;
 import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
 @Entity
 @Table(name = "tb_time_capsule")
 public class TimeCapsule {
@@ -16,10 +23,12 @@ public class TimeCapsule {
     @Column(name = "title", length = 50, nullable = false)
     private String title;
 
-    //묻히는 날짜
+    @Column(name = "buried_at", nullable = true)
+    private LocalDateTime buriedAt;
 
 
-    //열리는 날짜
+    @Column(name = "opend_at", nullable = false)
+    private LocalDateTime openedAt;
 
     @Column(name = "time_capsule_status", nullable = false)
     private TimeCapsuleStatus timeCapsuleStatus;

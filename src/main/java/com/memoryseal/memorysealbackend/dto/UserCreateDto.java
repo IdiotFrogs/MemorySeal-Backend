@@ -13,7 +13,7 @@ public class UserCreateDto {
 
     private String nickname;
 
-    private String proFileUrl;
+    private String profileUrl;
 
     private String email;
 
