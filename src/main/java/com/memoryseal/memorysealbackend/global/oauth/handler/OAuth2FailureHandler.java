@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.oauth.handler;
+package com.memoryseal.memorysealbackend.global.oauth.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

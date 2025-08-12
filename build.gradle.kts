@@ -24,9 +24,16 @@ repositories {
 }
 
 dependencies {
+	implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
-	//implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("com.mysql:mysql-connector-j")
 	annotationProcessor("org.projectlombok:lombok")

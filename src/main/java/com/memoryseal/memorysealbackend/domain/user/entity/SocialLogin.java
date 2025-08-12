@@ -1,6 +1,5 @@
-package com.memoryseal.memorysealbackend.entity;
+package com.memoryseal.memorysealbackend.domain.user.entity;
 
-import com.memoryseal.memorysealbackend.enums.SocialType;
 import jakarta.persistence.*;
 
 @Entity

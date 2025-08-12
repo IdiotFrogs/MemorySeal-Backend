@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.global.jwt;
+package com.memoryseal.memorysealbackend.global.security.jwt;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;

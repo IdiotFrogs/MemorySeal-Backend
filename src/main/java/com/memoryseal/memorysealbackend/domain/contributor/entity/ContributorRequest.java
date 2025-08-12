@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.entity;
+package com.memoryseal.memorysealbackend.domain.contributor.entity;
 
 import jakarta.persistence.*;
 

@@ -1,6 +1,5 @@
-package com.memoryseal.memorysealbackend.global.jwt;
+package com.memoryseal.memorysealbackend.global.security.jwt;
 
-import com.memoryseal.memorysealbackend.dto.SecurityUserDto;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
 import io.jsonwebtoken.JwtException;
@@ -37,23 +36,26 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if(!jwtUtil.verifyToken(atc)) {
+        String token = null;
+        if(atc.startsWith("Bearer ")) {
+            token = atc.substring("Bearer ".length());
+        }else {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if(!jwtUtil.verifyToken(token)) {
+            System.out.println("실패");
             throw new JwtException("Access Token 만료");
         }
 
-        if(jwtUtil.verifyToken(atc)) {
-            User findUser = userJpaRepository.findByEmail(jwtUtil.getUid(atc))
+        if(jwtUtil.verifyToken(token)) {
+            User findUser = userJpaRepository.findByEmail(jwtUtil.getUid(token))
                     .orElseThrow(IllegalStateException::new);
-
-            SecurityUserDto userDto = SecurityUserDto.builder()
-                    .userId(findUser.getId())
-                    .email(findUser.getEmail())
-                    .role("ROLE_".concat(findUser.getRole().name()))
-                    .nickname(findUser.getNickname())
-                    .build();
 
             Authentication auth = getAuthentication(findUser);
             SecurityContextHolder.getContext().setAuthentication(auth);
+            System.out.println("adasd");
         }
 
         filterChain.doFilter(request, response);
@@ -61,6 +63,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     public Authentication getAuthentication(User user) {
         return new UsernamePasswordAuthenticationToken(user, "",
-                List.of(new SimpleGrantedAuthority(user.getRole().getKey())));
+                List.of(new SimpleGrantedAuthority(user.getRole().name())));
     }
 }

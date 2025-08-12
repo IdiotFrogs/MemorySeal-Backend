@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.global.jwt;
+package com.memoryseal.memorysealbackend.global.security.jwt;
 
 import com.memoryseal.memorysealbackend.domain.auth.service.RefreshTokenService;
 import io.jsonwebtoken.Claims;
@@ -20,7 +20,6 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtUtil {
     private final JwtProperties jwtProperties;
-    private final RefreshTokenService refreshTokenService;
     private SecretKey secretKey;
 
     @PostConstruct
@@ -32,8 +31,6 @@ public class JwtUtil {
         String refreshToken = generateRefreshToken(email, role);
         String accessToken = generateAccessToken(email, role);
 
-        // 토큰 redis 저장
-        refreshTokenService.saveTokenInfo(email, refreshToken, accessToken);
         return new GeneratedToken(accessToken, refreshToken);
     }
 
@@ -77,6 +74,7 @@ public class JwtUtil {
                     .getExpiration()
                     .after(new Date());
         }catch (Exception e) {
+            log.error("jwt 검증 실패: {}", e.getMessage(), e);
             return false;
         }
     }

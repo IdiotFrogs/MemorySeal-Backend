@@ -1,8 +1,8 @@
-package com.memoryseal.memorysealbackend.service;
+package com.memoryseal.memorysealbackend.domain.contributor.service;
 
-import com.memoryseal.memorysealbackend.dto.ContributorResponseDto;
+import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.ContributorResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
-import com.memoryseal.memorysealbackend.repository.ContributorJpaRepository;
+import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

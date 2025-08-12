@@ -1,18 +1,18 @@
-package com.memoryseal.memorysealbackend.controller;
+package com.memoryseal.memorysealbackend.domain.user.controller;
 
-import com.memoryseal.memorysealbackend.dto.MyUserResponseDto;
-import com.memoryseal.memorysealbackend.dto.UserCreateDto;
-import com.memoryseal.memorysealbackend.dto.UserResponseDto;
-import com.memoryseal.memorysealbackend.dto.UserUpdateDto;
-import com.memoryseal.memorysealbackend.entity.User;
-import com.memoryseal.memorysealbackend.service.UserService;
-import lombok.Getter;
+import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserCreateDto;
+import com.memoryseal.memorysealbackend.domain.user.controller.dto.res.UserResponseDto;
+import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserUpdateDto;
+import com.memoryseal.memorysealbackend.domain.user.entity.User;
+import com.memoryseal.memorysealbackend.domain.user.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/users")
 @RequiredArgsConstructor
+@Tag(name = "User")
 public class UserController {
     private final UserService userService;
 
@@ -27,7 +27,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public MyUserResponseDto getDetail() {
+    public UserResponseDto getDetail() {
         return userService.getMyDetail();
     }
 

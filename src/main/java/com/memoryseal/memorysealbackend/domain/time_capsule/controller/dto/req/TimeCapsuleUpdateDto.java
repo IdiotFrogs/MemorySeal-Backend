@@ -1,7 +1,7 @@
-package com.memoryseal.memorysealbackend.dto;
+package com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req;
 
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
-import com.memoryseal.memorysealbackend.enums.TimeCapsuleStatus;
+import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

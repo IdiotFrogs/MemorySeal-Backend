@@ -1,7 +1,7 @@
-package com.memoryseal.memorysealbackend.dto;
+package com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res;
 
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
-import com.memoryseal.memorysealbackend.enums.ContributorRole;
+import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

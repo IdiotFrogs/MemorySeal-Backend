@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.repository;
+package com.memoryseal.memorysealbackend.domain.auth.repository;
 
 import com.memoryseal.memorysealbackend.domain.auth.entity.RefreshToken;
 import org.springframework.data.repository.CrudRepository;

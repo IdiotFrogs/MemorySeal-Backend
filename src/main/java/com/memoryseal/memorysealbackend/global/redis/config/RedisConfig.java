@@ -1,6 +1,6 @@
-package com.memoryseal.memorysealbackend.config;
+package com.memoryseal.memorysealbackend.global.redis.config;
 
-import com.memoryseal.memorysealbackend.properties.RedisProperties;
+import com.memoryseal.memorysealbackend.global.redis.properties.RedisProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

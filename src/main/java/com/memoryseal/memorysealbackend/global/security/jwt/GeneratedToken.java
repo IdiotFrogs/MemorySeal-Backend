@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.global.jwt;
+package com.memoryseal.memorysealbackend.global.security.jwt;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

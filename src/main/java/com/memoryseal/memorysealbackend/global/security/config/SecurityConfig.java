@@ -1,10 +1,10 @@
-package com.memoryseal.memorysealbackend.config;
+package com.memoryseal.memorysealbackend.global.security.config;
 
-import com.memoryseal.memorysealbackend.jwt.TokenAuthenticationFilter;
-import com.memoryseal.memorysealbackend.jwt.TokenExceptionFilter;
-import com.memoryseal.memorysealbackend.oauth.handler.OAuth2FailureHandler;
-import com.memoryseal.memorysealbackend.oauth.handler.OAuth2SuccessHandler;
-import com.memoryseal.memorysealbackend.service.CustomOauth2UserService;
+import com.memoryseal.memorysealbackend.global.security.jwt.TokenAuthenticationFilter;
+import com.memoryseal.memorysealbackend.global.security.jwt.TokenExceptionFilter;
+import com.memoryseal.memorysealbackend.global.oauth.handler.OAuth2FailureHandler;
+import com.memoryseal.memorysealbackend.global.oauth.handler.OAuth2SuccessHandler;
+import com.memoryseal.memorysealbackend.global.oauth.service.CustomOauth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,6 +54,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/time-capsules/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/authentication").authenticated()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().permitAll());
 

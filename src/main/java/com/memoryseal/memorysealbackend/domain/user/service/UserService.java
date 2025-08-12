@@ -1,17 +1,12 @@
-package com.memoryseal.memorysealbackend.service;
+package com.memoryseal.memorysealbackend.domain.user.service;
 
-import com.memoryseal.memorysealbackend.dto.MyUserResponseDto;
-import com.memoryseal.memorysealbackend.dto.UserCreateDto;
-import com.memoryseal.memorysealbackend.dto.UserResponseDto;
-import com.memoryseal.memorysealbackend.dto.UserUpdateDto;
+import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserCreateDto;
+import com.memoryseal.memorysealbackend.domain.user.controller.dto.res.UserResponseDto;
+import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserUpdateDto;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
-import com.memoryseal.memorysealbackend.repository.UserJpaRepository;
+import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.core.context.SecurityContext;
-//import org.springframework.security.core.context.SecurityContextHolder;
-//import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,17 +37,22 @@ public class UserService {
         return UserResponseDto.toDto(user);
     }
 
-    public MyUserResponseDto getMyDetail() {
+    public UserResponseDto getMyDetail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User principal = (User) authentication.getPrincipal();
-        String username;
+        Object principal = authentication.getPrincipal();
+        Long currentUserId;
         if(principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
+            currentUserId = Long.valueOf(((UserDetails) principal).getUsername());
+        }else if(principal instanceof Long){
+            currentUserId = (Long) principal;
+        }else if(principal instanceof String){
+            currentUserId = Long.valueOf((String) principal);
+        }else {
+            throw new IllegalArgumentException("사용자 ID를 가져올 수 없음");
         }
-        username = principal.toString();
-        User user = userJpaRepository.findByNickname(username).orElse(null);
+        User user = userJpaRepository.findById(currentUserId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없음"));
 
-        return MyUserResponseDto.toDto(user);
+        return UserResponseDto.toDto(user);
     }
 
     public UserUpdateDto updateUser(Long id, UserUpdateDto userUpdateDto) {

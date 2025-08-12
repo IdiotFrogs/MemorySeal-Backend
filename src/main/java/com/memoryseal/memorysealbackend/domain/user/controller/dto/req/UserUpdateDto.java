@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.dto;
+package com.memoryseal.memorysealbackend.domain.user.controller.dto.req;
 
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import lombok.AllArgsConstructor;

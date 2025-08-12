@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.properties;
+package com.memoryseal.memorysealbackend.global.redis.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -1,11 +1,10 @@
-package com.memoryseal.memorysealbackend.dto;
+package com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.memoryseal.memorysealbackend.enums.TimeCapsuleStatus;
+import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 

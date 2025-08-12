@@ -1,6 +1,5 @@
-package com.memoryseal.memorysealbackend.entity;
+package com.memoryseal.memorysealbackend.domain.file.entity;
 
-import com.memoryseal.memorysealbackend.enums.FileType;
 import jakarta.persistence.*;
 
 @Entity

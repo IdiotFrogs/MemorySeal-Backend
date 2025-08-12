@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.entity;
+package com.memoryseal.memorysealbackend.domain.invite;
 
 import jakarta.persistence.*;
 
@@ -11,7 +11,7 @@ public class Invite {
     private Long id;
 
     //초대 링크 공개키
-
+    private String code;
 
     @Column(name = "modification_status", nullable = false)
     private Boolean modificationStatus;

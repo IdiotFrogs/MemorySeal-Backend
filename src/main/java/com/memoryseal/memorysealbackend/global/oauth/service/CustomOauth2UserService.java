@@ -1,9 +1,9 @@
-package com.memoryseal.memorysealbackend.service;
+package com.memoryseal.memorysealbackend.global.oauth.service;
 
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
-import com.memoryseal.memorysealbackend.oauth.auth.AuthDetails;
-import com.memoryseal.memorysealbackend.oauth.data.OAuth2UserInfo;
-import com.memoryseal.memorysealbackend.repository.UserJpaRepository;
+import com.memoryseal.memorysealbackend.global.oauth.auth.AuthDetails;
+import com.memoryseal.memorysealbackend.global.oauth.data.OAuth2UserInfo;
+import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -35,8 +35,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
         // 유저 정보 dto 생성
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfo.of(registrationId, oAuth2UserAttributes);
 
-        // 회원 가입 및 로그인
-        User user = getOrSave(oAuth2UserInfo);
+        //User user = getOrSave(oAuth2UserInfo);
 
         // OAuth2User로 반환
         return new AuthDetails(user, oAuth2UserAttributes, userNameAttributeName);

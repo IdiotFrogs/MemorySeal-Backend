@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.enums;
+package com.memoryseal.memorysealbackend.domain.auth.entity;
 
 public enum Role {
     USER("ROLE_USER"),

@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.enums;
+package com.memoryseal.memorysealbackend.domain.time_capsule.entity;
 
 public enum TimeCapsuleStatus {
     OPENED,

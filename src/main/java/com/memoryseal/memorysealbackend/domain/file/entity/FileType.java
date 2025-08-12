@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.enums;
+package com.memoryseal.memorysealbackend.domain.file.entity;
 
 public enum FileType {
     IMAGE,

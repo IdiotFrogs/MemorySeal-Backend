@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.dto;
+package com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res;
 
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import lombok.AllArgsConstructor;

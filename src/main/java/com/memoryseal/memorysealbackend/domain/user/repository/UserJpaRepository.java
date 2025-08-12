@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.repository;
+package com.memoryseal.memorysealbackend.domain.user.repository;
 
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

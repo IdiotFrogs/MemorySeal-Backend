@@ -1,4 +1,4 @@
-package com.memoryseal.memorysealbackend.oauth.auth;
+package com.memoryseal.memorysealbackend.global.oauth.auth;
 
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;

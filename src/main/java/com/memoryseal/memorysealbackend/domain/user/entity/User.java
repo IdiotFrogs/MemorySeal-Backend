@@ -1,6 +1,6 @@
-package com.memoryseal.memorysealbackend.entity;
+package com.memoryseal.memorysealbackend.domain.user.entity;
 
-import com.memoryseal.memorysealbackend.enums.Role;
+import com.memoryseal.memorysealbackend.domain.auth.entity.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,7 +29,7 @@ public class User {
     @Column(name = "user_active_status", nullable = false)
     private Boolean userActiveStatus;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
-
 }

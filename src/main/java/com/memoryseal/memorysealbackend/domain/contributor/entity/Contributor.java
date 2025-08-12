@@ -1,6 +1,5 @@
-package com.memoryseal.memorysealbackend.entity;
+package com.memoryseal.memorysealbackend.domain.contributor.entity;
 
-import com.memoryseal.memorysealbackend.enums.ContributorRole;
 import jakarta.persistence.*;
 import lombok.*;
 
