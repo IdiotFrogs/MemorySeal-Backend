@@ -8,6 +8,10 @@
 .LSOverride
 
 src/main/resources/application.yml
+
+.gradle
+/build/
+
 # Icon must end with two \r
 Icon
 

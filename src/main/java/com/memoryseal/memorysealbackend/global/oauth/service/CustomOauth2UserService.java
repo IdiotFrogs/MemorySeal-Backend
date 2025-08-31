@@ -35,7 +35,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
         // 유저 정보 dto 생성
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfo.of(registrationId, oAuth2UserAttributes);
 
-        //User user = getOrSave(oAuth2UserInfo);
+        User user = getOrSave(oAuth2UserInfo);
 
         // OAuth2User로 반환
         return new AuthDetails(user, oAuth2UserAttributes, userNameAttributeName);

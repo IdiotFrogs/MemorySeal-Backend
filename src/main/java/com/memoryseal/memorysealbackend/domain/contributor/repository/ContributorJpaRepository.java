@@ -1,14 +1,18 @@
 package com.memoryseal.memorysealbackend.domain.contributor.repository;
 
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
+import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ContributorJpaRepository extends JpaRepository<Contributor, Long> {
     List<Contributor> findByTimeCapsuleId(Long TimeCapsuleId);
 
     List<Contributor> findByUserId(Long userId);
+
+    Optional<Contributor> findByUserIdAndTimeCapsuleId(Long userId, Long timeCapsuleId);
 }
