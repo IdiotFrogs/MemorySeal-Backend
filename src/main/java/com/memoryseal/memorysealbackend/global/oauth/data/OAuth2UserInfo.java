@@ -1,4 +1,5 @@
 package com.memoryseal.memorysealbackend.global.oauth.data;
+import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import com.memoryseal.memorysealbackend.domain.user.entity.SocialType;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.auth.entity.Role;
@@ -10,7 +11,7 @@ import java.util.Map;
 public record OAuth2UserInfo(
         String name,
         String email,
-        String profile,
+        AttachedFile profile,
         SocialType socialType
 ) {
 
@@ -26,7 +27,7 @@ public record OAuth2UserInfo(
         return OAuth2UserInfo.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
-                .profile((String) attributes.get("picture"))
+                .profile((AttachedFile) attributes.get("picture"))
                 .socialType(SocialType.GOOGLE)
                 .build();
     }
@@ -61,7 +62,7 @@ public record OAuth2UserInfo(
         return User.builder()
                 .nickname(name)
                 .email(email)
-                .profileUrl(profile)
+                .profileImage(profile)
                 .userActiveStatus(true)
                 .role(Role.USER)
                 .build();

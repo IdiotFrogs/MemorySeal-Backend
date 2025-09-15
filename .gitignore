@@ -12,6 +12,8 @@ src/main/resources/application.yml
 .gradle
 /build/
 
+src/main/resources/AuthKey_4KGCCJ8JG5.p8
+
 # Icon must end with two \r
 Icon
 

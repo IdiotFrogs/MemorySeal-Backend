@@ -20,19 +20,33 @@ public class S3Controller {
 
     private final S3Service s3Service;
 
-    @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(
+    @PostMapping("/upload/main-image")
+    public ResponseEntity<String> uploadMainImage(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("targetType") TargetType targetType,
-            @RequestParam("id") Long id) {
+            @RequestParam("timeCapsuleId") Long timeCapsuleId) {
         try {
-            String imageUrl = s3Service.uploadImage(file, targetType, id);
-            return new ResponseEntity<>("image uploaded", HttpStatus.OK);
+            String fileUrl = s3Service.uploadImage(file, timeCapsuleId);
+            return new ResponseEntity<>("타임캡슐 대표 이미지 업로드 성공. URL: " + fileUrl, HttpStatus.OK);
         }catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>("failed", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("타임캡슐 대표 이미지 업로드 실패", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/upload/profile-image")
+    public ResponseEntity<String> uploadProfileImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("userId") Long userId) {
+        try {
+            String fileUrl = s3Service.uploadProfileImage(file, userId);
+            return new ResponseEntity<>("프로필 이미지 업로드 성공. URL: " + fileUrl, HttpStatus.OK);
+        }catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("프로필 이미지 업로드 실패", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.memoryseal.memorysealbackend.domain.user.entity;
 
 import com.memoryseal.memorysealbackend.domain.auth.entity.Role;
+import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +21,9 @@ public class User {
     @Column(name = "nickname",length = 16, nullable = false)
     private String nickname;
 
-    @Column(name = "profile_url", length = 100, nullable = true)
-    private String profileUrl;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_image_id", unique = true)
+    private AttachedFile profileImage;
 
     @Column(name = "email", length = 50, nullable = false)
     private String email;

@@ -1,10 +1,13 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -46,6 +49,13 @@ public class TimeCapsule {
 
     @Column(name = "time_capsule_active_status", nullable = false)
     private Boolean timeCapsuleActiveStatus;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "main_image_file_id", unique = true)
+    private AttachedFile mainImage;
+
+    @OneToMany(mappedBy = "timeCapsule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TimeCapsuleContent> contents = new ArrayList<>();
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
