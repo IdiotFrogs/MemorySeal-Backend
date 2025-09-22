@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class TimeCapsuleContentController {
     private final TimeCapsuleContentService timeCapsuleContentService;
 
-    @PostMapping("/{timeCapsuleId")
+    @PostMapping("/{timeCapsuleId}")
     public ResponseEntity<TimeCapsuleContent> createContent(
             @PathVariable Long timeCapsuleId,
             @ModelAttribute TimeCapsuleContentRequest request) {

@@ -1,6 +1,7 @@
 package com.memoryseal.memorysealbackend.domain.user.controller.dto.req;
 
 import com.memoryseal.memorysealbackend.domain.auth.entity.Role;
+import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +15,7 @@ public class UserCreateDto {
 
     private String nickname;
 
-    private String profileUrl;
+    private AttachedFile profileUrl;
 
     private String email;
 

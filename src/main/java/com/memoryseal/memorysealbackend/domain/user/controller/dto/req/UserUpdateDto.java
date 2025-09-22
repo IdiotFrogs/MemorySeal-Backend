@@ -1,5 +1,6 @@
 package com.memoryseal.memorysealbackend.domain.user.controller.dto.req;
 
+import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +15,7 @@ public class UserUpdateDto {
 
     private String nickname;
 
-    private String profileUrl;
+    private AttachedFile profileUrl;
 
     private String email;
 
@@ -25,7 +26,7 @@ public class UserUpdateDto {
         }else {
             return UserUpdateDto.builder()
                     .nickname(user.getNickname())
-                    .profileUrl(user.getProfileUrl())
+                    .profileUrl(user.getProfileImage())
                     .email(user.getEmail())
                     .build();
         }

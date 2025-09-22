@@ -22,7 +22,7 @@ public class UserService {
         User user = User.builder()
                 .nickname(userCreateDTO.getNickname())
                 .email(userCreateDTO.getEmail())
-                .profileUrl((userCreateDTO.getProfileUrl()))
+                .profileImage((userCreateDTO.getProfileUrl()))
                 .userActiveStatus(userCreateDTO.getUserActiveStatus())
                 .role(userCreateDTO.getRole())
                 .build();
@@ -66,7 +66,7 @@ public class UserService {
             user.setEmail(userUpdateDto.getEmail());
         }
         if(userUpdateDto.getProfileUrl() != null) {
-            user.setProfileUrl(userUpdateDto.getProfileUrl());
+            user.setProfileImage(userUpdateDto.getProfileUrl());
         }
 
         userJpaRepository.save(user);
