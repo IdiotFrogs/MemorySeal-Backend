@@ -28,15 +28,20 @@ public class JwtUtil {
     }
 
     public GeneratedToken generateToken(String email, String role) {
+        Long now = new Date().getTime();
+        Long accessTokenPeriod = 1000L * 60L * 30L;
+        //Long refreshTokenPeriod = 1000L * 60L * 60L * 24L * 14;
         String refreshToken = generateRefreshToken(email, role);
         String accessToken = generateAccessToken(email, role);
+        Long accessTokenExpiresIn = now + accessTokenPeriod;
+        //Long refreshTokenExpiresIn = now + refreshTokenPeriod;
 
-        return new GeneratedToken(accessToken, refreshToken);
+        return new GeneratedToken(accessToken, refreshToken, accessTokenExpiresIn);
     }
 
     public String generateRefreshToken(String email, String role) {
         // 토큰의 유효 기간을 밀리초 단위로 설정
-        long refreshPeriod = 1000L * 60L * 60L * 24L * 14;  // 2주
+        long refreshPeriod = 1000L * 60L * 60L * 24L * 30L;  // 30일
 
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
@@ -47,12 +52,12 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + refreshPeriod))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String generateAccessToken(String email, String role) {
-        long tokenPeriod = 1000L * 60L * 30L; // 30분
+        long tokenPeriod = 1000L * 60L * 60L * 24L; // 1일
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
 

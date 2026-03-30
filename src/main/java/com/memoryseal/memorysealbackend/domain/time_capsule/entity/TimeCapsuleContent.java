@@ -21,7 +21,7 @@ public class TimeCapsuleContent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "content", length = 255, nullable = true)
+    @Column(name = "content", columnDefinition = "TEXT", nullable = true)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,7 +32,12 @@ public class TimeCapsuleContent {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Builder.Default
     @OneToMany(mappedBy = "timeCapsuleContent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttachedFile> attachedFiles = new ArrayList<>();
 
+    public void addAttachedFile(AttachedFile file) {
+        this.attachedFiles.add(file);
+        file.setTimeCapsuleContent(this);
+    }
 }

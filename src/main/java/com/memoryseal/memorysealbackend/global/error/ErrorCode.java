@@ -1,0 +1,50 @@
+package com.memoryseal.memorysealbackend.global.error;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@AllArgsConstructor
+public enum ErrorCode {
+
+    // 400 Bad Request
+    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "파라미터 값을 확인해 주세요"),
+    MISSING_AUTH_CODE(HttpStatus.BAD_REQUEST, "인증 코드가 전달되지 않았습니다."),
+    INVALID_INVITE_CODE(HttpStatus.BAD_REQUEST, "유효하지 않거나 만료된 초대 코드입니다."),
+    EMPTY_CONTENT(HttpStatus.BAD_REQUEST, "내용 또는 파일 중 적어도 하나는 포함되어야 합니다."),
+    INVALID_FILE_FORMAT(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
+    EMPTY_FILE(HttpStatus.BAD_REQUEST, "업로드할 파일이 없습니다."),
+    NOT_SUPPORT_LOGIN(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 방식입니다."),
+
+    // 401 UnAuthorized
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "로그인에 실패했습니다."),
+    NEED_LOGIN(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+
+    // 403 FORBIDDEN
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 요청을 처리할 권한이 없습니다."),
+
+    // 404 NOT FOUND
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 입니다."),
+    REFRESHTOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "저장된 리프레시 토큰이 없습니다."),
+    TIMECAPSULE_NOT_FOUND(HttpStatus.NOT_FOUND, "타임캡슐을 찾을 수 없습니다."),
+    REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "공동작업자 요청을 찾을 수 없습니다."),
+    CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "타임캡슐 내용을 찾을 수 없습니다."),
+
+    // 409 CONFLiCT(중복된 상태)
+    ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 공동작업자 요청을 보냈습니다."),
+    ALREADY_CONTRIBUTOR(HttpStatus.CONFLICT, "이미 공동작업자로 등록이 완료된 사용자입니다."),
+    ALREADY_ONBOARDED(HttpStatus.CONFLICT, "이미 온보딩이 완료된 유저입니다."),
+
+    // 500 Internal Server Error
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
+    APPLE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Apple 서버 통신 중 오류가 발생했습니다."),
+    GOOGLE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Google 서버 통신 중 오류가 발생했습니다."),
+    FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 중 서버 오류가 발생했습니다.");
+
+    private final HttpStatus status;
+    private final String message;
+
+}

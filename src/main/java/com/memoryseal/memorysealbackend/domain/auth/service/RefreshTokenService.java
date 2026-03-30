@@ -2,12 +2,15 @@ package com.memoryseal.memorysealbackend.domain.auth.service;
 
 import com.memoryseal.memorysealbackend.domain.auth.entity.RefreshToken;
 import com.memoryseal.memorysealbackend.domain.auth.repository.RefreshTokenRepository;
+import com.memoryseal.memorysealbackend.global.error.ErrorCode;
+import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import com.memoryseal.memorysealbackend.global.security.jwt.GeneratedToken;
 import com.memoryseal.memorysealbackend.global.security.jwt.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -34,27 +37,37 @@ public class RefreshTokenService {
     @Transactional
     public void removeRefreshToken(String accessToken) {
         RefreshToken token = refreshTokenRepository.findByAccessToken(accessToken)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new AuthException(ErrorCode.REFRESHTOKEN_NOT_FOUND));
         refreshTokenRepository.delete(token);
     }
 
     @Transactional
-    public GeneratedToken reissue(String accessToken) {
-        RefreshToken refreshTokenEntity = refreshTokenRepository.findByAccessToken(accessToken)
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 토큰 or refresh token을 찾을 수 없음"));
-
-        String storedRefreshToken = refreshTokenEntity.getRefreshToken();
-        String userEmail = refreshTokenEntity.getId();
-
-        if(!jwtUtil.verifyToken(storedRefreshToken)) {
-            refreshTokenRepository.delete(refreshTokenEntity);
-            throw new IllegalArgumentException("만료되거나 유효하지 않은 토큰");
+    public GeneratedToken reissue(String refreshToken) {
+        String actualToken = refreshToken;
+        if(StringUtils.hasText(refreshToken) && refreshToken.startsWith("Bearer ")) {
+            actualToken = refreshToken.substring(7);
+        }
+        if(!jwtUtil.verifyToken(actualToken)) {
+            throw new AuthException(ErrorCode.EXPIRED_TOKEN);
         }
 
-        String userRole = jwtUtil.getRole(storedRefreshToken);
+        String userEmail = jwtUtil.getUid(actualToken);
 
+        RefreshToken tokenEntity = refreshTokenRepository.findById(userEmail)
+                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+
+        if(!tokenEntity.getRefreshToken().equals(actualToken)) {
+            refreshTokenRepository.delete(tokenEntity);
+            throw new AuthException(ErrorCode.INVALID_TOKEN);
+        }
+
+        String userRole = jwtUtil.getRole(actualToken);
         GeneratedToken newToken = jwtUtil.generateToken(userEmail, userRole);
 
-        return  newToken;
+        tokenEntity.updateAccessToken(newToken.getAccessToken());
+        tokenEntity.setRefreshToken(newToken.getRefreshToken());
+        refreshTokenRepository.save(tokenEntity);
+
+        return newToken;
     }
 }

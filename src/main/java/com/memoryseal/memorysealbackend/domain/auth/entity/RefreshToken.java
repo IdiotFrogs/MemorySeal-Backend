@@ -15,6 +15,7 @@ import java.io.Serializable;
 @RedisHash(value = "jwtToken", timeToLive = 60 * 60 * 24 * 14)
 public class RefreshToken implements Serializable {
 
+    // 이메일을 id로 사용
     @Id
     private String id;
 

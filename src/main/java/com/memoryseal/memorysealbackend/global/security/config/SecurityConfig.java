@@ -5,6 +5,10 @@ import com.memoryseal.memorysealbackend.global.security.jwt.TokenExceptionFilter
 import com.memoryseal.memorysealbackend.global.oauth.handler.OAuth2FailureHandler;
 import com.memoryseal.memorysealbackend.global.oauth.handler.OAuth2SuccessHandler;
 import com.memoryseal.memorysealbackend.global.oauth.service.CustomOauth2UserService;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +22,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.ForwardedHeaderFilter;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Configuration
@@ -33,12 +43,28 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
-                .requestMatchers("/error", "favicon.ico");
+                .requestMatchers("/error", "favicon.ico")
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**");
     }
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("https://d1b9ny7jml3wl9.cloudfront.net");
+        configuration.addAllowedOriginPattern("https://43.201.236.253.sslip.io:8080");
+        configuration.addAllowedOriginPattern("https://43.201.236.253.sslip.io");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
@@ -48,16 +74,24 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)    // csrf disable
                 .formLogin(AbstractHttpConfigurer::disable)    // From 로그인 방식 disable
                 .httpBasic(AbstractHttpConfigurer::disable)    // http basic 인증 방식 disable
-                .cors(AbstractHttpConfigurer::disable);
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\": \"NEED_LOGIN\", \"messsage\": \"인증이 필요합니다.\"}");
+                        })
+                ));
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/time-capsules/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/authentication").authenticated()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login/google").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login/apple").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/reissue").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
-                        .anyRequest().permitAll());
+                        .anyRequest().authenticated());
+                        //.anyRequest().permitAll());
 
         // 세션 설정
         http
@@ -80,5 +114,10 @@ public class SecurityConfig {
 
 
         return http.build();
+    }
+
+    @Bean
+    public ForwardedHeaderFilter forwardedHeaderFilter() {
+        return new ForwardedHeaderFilter();
     }
 }

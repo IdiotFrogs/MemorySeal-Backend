@@ -16,6 +16,6 @@ import java.io.IOException;
 public class OAuth2FailureHandler implements AuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        response.sendRedirect("http://localhost:8080/");
+        response.sendRedirect("http://43.201.236.253.sslip.io:8080/auth/login?error=failed");
     }
 }

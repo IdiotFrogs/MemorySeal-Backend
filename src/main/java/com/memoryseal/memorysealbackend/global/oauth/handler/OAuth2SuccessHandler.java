@@ -29,12 +29,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+
+        log.info("OAuth2 attributes: {}", oAuth2User.getAttributes());
+
         String email = oAuth2User.getAttribute("email");
 
         String role = oAuth2User.getAuthorities().stream().
                 findFirst()
-                .orElseThrow(() -> new IllegalStateException("역할을 찾을 수 없음"))
-                .getAuthority();
+                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .orElse("ROLE_USER");
 
         GeneratedToken token = jwtUtil.generateToken(email, role);
         log.info("generate accessToken = {}", token.getAccessToken());
@@ -42,7 +45,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         refreshTokenService.saveTokenInfo(email, token.getRefreshToken(), token.getAccessToken());
 
-        String targetUrl = UriComponentsBuilder.fromUriString("/auth/login")
+        String targetUrl = UriComponentsBuilder.fromUriString("http://43.201.236.253.sslip.io:8080/auth/login/success")
+                //http://localhost:3000/oauth/callback
                 .queryParam("accessToken", token.getAccessToken())
                 .queryParam("refreshToken", token.getRefreshToken())
                 .build()

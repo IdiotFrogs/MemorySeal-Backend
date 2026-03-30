@@ -3,80 +3,107 @@ package com.memoryseal.memorysealbackend.domain.time_capsule.service;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
+import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
+import com.memoryseal.memorysealbackend.domain.file.entity.FileType;
+import com.memoryseal.memorysealbackend.domain.file.repository.AttachedFileJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleCreateResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleNameDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
+import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
+import com.memoryseal.memorysealbackend.domain.user.entity.User;
+import com.memoryseal.memorysealbackend.global.aws.service.S3Service;
+import com.memoryseal.memorysealbackend.global.error.ErrorCode;
+import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TimeCapsuleService {
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
     private final ContributorJpaRepository contributorJpaRepository;
+    private final S3Service s3Service;
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("인증되지 않은 사용자");
+            throw new AuthException(ErrorCode.NEED_LOGIN);
         }
         Object principal = authentication.getPrincipal();
-        if(principal instanceof UserDetails) {
-            return Long.valueOf(((UserDetails) principal).getUsername());
-        }else if(principal instanceof Long) {
-            return (Long) principal;
+        Long currentUserId;
+        if(principal instanceof User) {
+            currentUserId = ((User) principal).getId();
         }else if(principal instanceof String) {
-            return Long.valueOf((String) principal);
+            currentUserId = Long.valueOf((String) principal);
         }else {
-            throw new IllegalStateException("사용자 ID를 가져올 수 없음");
+            log.error("예상치 못한 Principal 타입: {}", principal.getClass().getName());
+            throw new AuthException(ErrorCode.NEED_LOGIN);
         }
+        return currentUserId;
     }
 
-    public TimeCapsule createTimeCapsule(TimeCapsuleCreateDto timeCapsuleCreateDto) {
-        Long currentUserId = getCurrentUserId();
-        TimeCapsule timeCapsule = TimeCapsule.builder()
-                .title(timeCapsuleCreateDto.getTitle())
-                .buriedAt(timeCapsuleCreateDto.getBuriedAt())
-                .openedAt(timeCapsuleCreateDto.getOpenedAt())
-                .timeCapsuleStatus(timeCapsuleCreateDto.getTimeCapsuleStatus())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .timeCapsuleActiveStatus(timeCapsuleCreateDto.getTimeCapsuleActiveStatus())
-                .userId(timeCapsuleCreateDto.getUserId())
-                .build();
-
-        Contributor hostContributor = Contributor.builder()
-                .contributorRole(ContributorRole.HOST)
-                .bury(false)
-                .userId(currentUserId)
-                .timeCapsuleId(timeCapsule.getId())
-                .build();
-        contributorJpaRepository.save(hostContributor);
-
-        return timeCapsuleJpaRepository.save(timeCapsule);
-    }
-    public List<TimeCapsuleResponseDto> getMyDetail() {
+    public TimeCapsuleCreateResDto createTimeCapsule(TimeCapsuleCreateDto timeCapsuleCreateDto, MultipartFile mainImage) throws IOException {
         Long currentUserId = getCurrentUserId();
 
-        List<TimeCapsule> myTimeCapsule = timeCapsuleJpaRepository.findByUserId(currentUserId);
-        return myTimeCapsule.stream()
-                .map(TimeCapsuleResponseDto::toDto)
-                .collect(Collectors.toList());
+        log.info("타임캡슐 생성 시작 - 유저 ID: {}", currentUserId);
+
+        try{
+            TimeCapsule timeCapsule = TimeCapsule.builder()
+                    .title(timeCapsuleCreateDto.getTitle())
+                    .description(timeCapsuleCreateDto.getDescription())
+                    .openedAt(timeCapsuleCreateDto.getOpenedAt())
+                    .timeCapsuleStatus(TimeCapsuleStatus.BEFOREBURIED)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .timeCapsuleActiveStatus(true)
+                    .userId(currentUserId)
+                    .build();
+
+            TimeCapsule savedTimeCapsule = timeCapsuleJpaRepository.save(timeCapsule);
+            log.info("타임캡슐 DB 저장 완료 - 생성된 ID: {}", savedTimeCapsule.getId());
+
+            if(mainImage != null && !mainImage.isEmpty()) {
+                log.info("이미지 업로드 시도: {}", mainImage.getOriginalFilename());
+                s3Service.uploadImage(mainImage, savedTimeCapsule.getId());
+            }
+
+            Contributor hostContributor = Contributor.builder()
+                    .contributorRole(ContributorRole.HOST)
+                    .bury(false)
+                    .userId(currentUserId)
+                    .timeCapsuleId(savedTimeCapsule.getId())
+                    .build();
+            contributorJpaRepository.save(hostContributor);
+            log.info("Contributor 저장 완료");
+
+            timeCapsuleJpaRepository.save(timeCapsule);
+
+            return TimeCapsuleCreateResDto.toDto(timeCapsule);
+        } catch (Exception e) {
+            log.error("타임캡슐 생성 중 오류 발생: {}", e.getMessage());
+            throw e;
+        }
     }
 
     public TimeCapsuleResponseDto getDetail(Long id) {
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("아이디 값이 없습니다")
+                () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
         return TimeCapsuleResponseDto.toDto(timeCapsule);
     }
@@ -86,35 +113,44 @@ public class TimeCapsuleService {
 
         List<Contributor> contributors = contributorJpaRepository.findByUserId(currentUserId);
 
+        List<Long> timeCapsuleIds = contributors.stream()
+                .map(Contributor::getTimeCapsuleId)
+                .toList();
+
+        List<TimeCapsule> timeCapsules = timeCapsuleJpaRepository.findAllById(timeCapsuleIds);
+
+        Map<Long, TimeCapsule> timeCapsuleMap = timeCapsules.stream()
+                .collect(Collectors.toMap(TimeCapsule::getId, t -> t));
+
         return contributors.stream()
                 .map(contributor -> {
-                    TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(contributor.getTimeCapsuleId())
-                            .orElseThrow(() -> new IllegalArgumentException("타임캡슐을 찾을 수 없음"));
-
+                    TimeCapsule timeCapsule = timeCapsuleMap.get(contributor.getTimeCapsuleId());
+                    if(timeCapsule == null) {
+                        throw new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND);
+                    }
                     return TimeCapsuleNameDto.builder()
                             .timeCapsuleId(timeCapsule.getId())
                             .title(timeCapsule.getTitle())
+                            .openedAt(timeCapsule.getOpenedAt())
+                            .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
                             .role(contributor.getContributorRole())
                             .build();
                 })
                 .collect(Collectors.toList());
     }
 
-    public TimeCapsuleUpdateDto updateTimeCapsule(Long id, TimeCapsuleUpdateDto timeCapsuleUpdateDto) {
-        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("아이디 값이 없습니다")
+    public TimeCapsuleUpdateDto updateTimeCapsule(Long capsuleId, TimeCapsuleUpdateDto timeCapsuleUpdateDto) {
+        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(
+                () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
         if(timeCapsuleUpdateDto.getTitle() != null) {
             timeCapsule.setTitle(timeCapsuleUpdateDto.getTitle());
         }
-        if(timeCapsuleUpdateDto.getBuriedAt() != null) {
-            timeCapsule.setBuriedAt(timeCapsuleUpdateDto.getBuriedAt());
+        if(timeCapsuleUpdateDto.getDescription() != null) {
+            timeCapsule.setDescription(timeCapsuleUpdateDto.getDescription());
         }
         if(timeCapsuleUpdateDto.getOpenedAt() != null) {
             timeCapsule.setOpenedAt(timeCapsuleUpdateDto.getOpenedAt());
-        }
-        if(timeCapsuleUpdateDto.getTimeCapsuleStatus() != null) {
-            timeCapsule.setTimeCapsuleStatus(timeCapsuleUpdateDto.getTimeCapsuleStatus());
         }
 
         timeCapsule.setUpdatedAt(LocalDateTime.now());

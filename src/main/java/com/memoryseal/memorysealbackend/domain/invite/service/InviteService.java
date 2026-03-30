@@ -9,13 +9,14 @@ import com.memoryseal.memorysealbackend.domain.contributor.repository.Contributo
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
+import com.memoryseal.memorysealbackend.global.error.ErrorCode;
+import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import com.memoryseal.memorysealbackend.global.redis.util.RandomUtil;
 import com.memoryseal.memorysealbackend.global.redis.util.RedisUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.util.Optional;
 
 @Service
@@ -30,7 +31,7 @@ public class InviteService {
     private static final String INVITE_LINK_PREFIX = "id=%d";
 
     public InviteResponseDto generateInviteCode(final long capsuleId) {
-        timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(() -> new IllegalArgumentException("타임캡슐이 존재하지 않음"));
+        timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
 
         final Optional<String> link = redisUtil.getData(INVITE_LINK_PREFIX.formatted(capsuleId), String.class);
         if(link.isEmpty()) {
@@ -42,16 +43,16 @@ public class InviteService {
     }
 
     public void submitContributorRequest(final Long capsuleId, final String inviteCode, final Long userId) {
-        timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(() -> new IllegalArgumentException("타임캡슐이 존재하지 않음."));
+        timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
         final Optional<String> storedCode = redisUtil.getData(INVITE_LINK_PREFIX.formatted(capsuleId), String.class);
         if(storedCode.isEmpty() || !storedCode.get().equals(inviteCode)) {
-            throw new IllegalArgumentException("유효하지 않은 초대 코드");
+            throw new AuthException(ErrorCode.INVALID_INVITE_CODE);
         }
 
         contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(userId, capsuleId)
-                .ifPresent(req -> {throw new IllegalStateException("이미 공동작업자 요청을 보냄");});
+                .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_REQUESTED);});
         contributorJpaRepository.findByUserIdAndTimeCapsuleId(userId, capsuleId)
-                .ifPresent(req -> {throw new IllegalStateException("이미 공동작업자로 등록됨");});
+                .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_CONTRIBUTOR);});
 
         final ContributorRequest newRequest = ContributorRequest.builder()
                 .userId(userId)
@@ -60,15 +61,15 @@ public class InviteService {
         contributorRequestJpaRepository.save(newRequest);
     }
 
-    public void processContributorRequest(final Long requestId, final Long hostId, final boolean isApproved) throws AccessDeniedException {
+    public void processContributorRequest(final Long requestId, final Long hostId, final boolean isApproved) {
         ContributorRequest request = contributorRequestJpaRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("요청이 존재하지 않음."));
+                .orElseThrow(() -> new AuthException(ErrorCode.REQUEST_NOT_FOUND));
 
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(request.getTimeCapsuleId())
-                .orElseThrow(() -> new IllegalArgumentException("타임캡슐이 존재하지 않음."));
+                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
 
         if(!timeCapsule.getUserId().equals(hostId)) {
-            throw new AccessDeniedException("처리 권한 없음.");
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
         if(isApproved) {

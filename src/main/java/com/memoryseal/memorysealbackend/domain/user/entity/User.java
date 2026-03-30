@@ -34,4 +34,16 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+
+    @Column(name = "provider")
+    private String provider;
+
+    @Column(name = "provider_id")
+    private String providerId;
+
+    @Column(name = "apple_refresh_token", nullable = true)
+    private String appleRefreshToken;
+
+    @Column(name = "is_onboarding", nullable = false)
+    private Boolean isOnboarding;
 }

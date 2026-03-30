@@ -31,31 +31,24 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String atc = request.getHeader("Authorization");
 
-        if(!StringUtils.hasText(atc)) {
-            doFilter(request, response, filterChain);
-            return;
-        }
-
-        String token = null;
-        if(atc.startsWith("Bearer ")) {
-            token = atc.substring("Bearer ".length());
-        }else {
+        if(!StringUtils.hasText(atc) || !atc.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if(!jwtUtil.verifyToken(token)) {
-            System.out.println("실패");
-            throw new JwtException("Access Token 만료");
-        }
+        String token = atc.substring(7);
 
-        if(jwtUtil.verifyToken(token)) {
-            User findUser = userJpaRepository.findByEmail(jwtUtil.getUid(token))
-                    .orElseThrow(IllegalStateException::new);
-
-            Authentication auth = getAuthentication(findUser);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            System.out.println("adasd");
+        try {
+            if(jwtUtil.verifyToken(token)) {
+                String email = jwtUtil.getUid(token);
+                User findUser = userJpaRepository.findByEmail(email)
+                        .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
+                Authentication auth = getAuthentication(findUser);
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        }catch (Exception e) {
+            log.error("Token authentication failed: {}", e.getMessage());
+            throw new JwtException("유효하지 않은 토큰입니다.");
         }
 
         filterChain.doFilter(request, response);
@@ -64,5 +57,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     public Authentication getAuthentication(User user) {
         return new UsernamePasswordAuthenticationToken(user, "",
                 List.of(new SimpleGrantedAuthority(user.getRole().name())));
+    }
+
+    @Override
+    public boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return request.getServletPath().equals("/auth/reissue");
     }
 }

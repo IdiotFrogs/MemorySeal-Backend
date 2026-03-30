@@ -4,6 +4,11 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleCo
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ContentJpaRepository extends JpaRepository<TimeCapsuleContent, Long> {
+    List<TimeCapsuleContent> findByTimeCapsuleId(Long timeCapsuleId);
+
+    void deleteByIdAndUserId(Long id, Long userId);
 }

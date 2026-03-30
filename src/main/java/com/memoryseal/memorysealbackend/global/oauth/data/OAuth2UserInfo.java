@@ -1,8 +1,11 @@
 package com.memoryseal.memorysealbackend.global.oauth.data;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
+import com.memoryseal.memorysealbackend.domain.file.entity.FileType;
 import com.memoryseal.memorysealbackend.domain.user.entity.SocialType;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.auth.entity.Role;
+import com.memoryseal.memorysealbackend.global.error.ErrorCode;
+import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.Builder;
 
 import java.util.Map;
@@ -11,7 +14,7 @@ import java.util.Map;
 public record OAuth2UserInfo(
         String name,
         String email,
-        AttachedFile profile,
+        String profileUrl,
         SocialType socialType
 ) {
 
@@ -19,7 +22,7 @@ public record OAuth2UserInfo(
         return switch (registrationId) {
             case "google" -> ofGoogle(attributes);
             case "apple" -> ofApple(attributes);
-            default -> throw new IllegalArgumentException("지원하지 않는 OAuth 제공: " + registrationId);
+            default -> throw new AuthException(ErrorCode.NOT_SUPPORT_LOGIN);
         };
     }
 
@@ -27,7 +30,7 @@ public record OAuth2UserInfo(
         return OAuth2UserInfo.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
-                .profile((AttachedFile) attributes.get("picture"))
+                .profileUrl((String) attributes.get("picture"))
                 .socialType(SocialType.GOOGLE)
                 .build();
     }
@@ -53,16 +56,25 @@ public record OAuth2UserInfo(
         return OAuth2UserInfo.builder()
                 .name(name)
                 .email(email)
-                .profile(null)
+                .profileUrl(null)
                 .socialType(SocialType.APPLE)
                 .build();
     }
 
     public User toEntity() {
+        AttachedFile profileImageEntity = null;
+        if(profileUrl != null) {
+            profileImageEntity = AttachedFile.builder()
+                    .fileUrl(profileUrl)
+                    .fileSize(0L)
+                    .fileType(FileType.IMAGE)
+                    .isMain(true)
+                    .build();
+        }
         return User.builder()
                 .nickname(name)
                 .email(email)
-                .profileImage(profile)
+                .profileImage(profileImageEntity)
                 .userActiveStatus(true)
                 .role(Role.USER)
                 .build();

@@ -15,4 +15,6 @@ public interface ContributorJpaRepository extends JpaRepository<Contributor, Lon
     List<Contributor> findByUserId(Long userId);
 
     Optional<Contributor> findByUserIdAndTimeCapsuleId(Long userId, Long timeCapsuleId);
+
+    boolean existsByTimeCapsuleIdAndUserId(Long timecapsuleId, Long userId);
 }

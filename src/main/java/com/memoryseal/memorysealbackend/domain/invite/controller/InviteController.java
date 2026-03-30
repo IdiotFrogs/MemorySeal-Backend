@@ -4,6 +4,16 @@ import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.InviteR
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.ProcessRequestDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
 import com.memoryseal.memorysealbackend.domain.invite.service.InviteService;
+import com.memoryseal.memorysealbackend.global.error.ErrorCode;
+import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
+import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,21 +33,84 @@ import java.nio.file.AccessDeniedException;
 @Tag(name = "Invite")
 public class InviteController {
     private final InviteService inviteService;
+
+    @Operation(summary = "타임캡슐 초대 코드 생성")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "성공"),
+            @ApiResponse(responseCode = "404", description = "타임캡슐을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/invite\"}")))
+    })
     @PostMapping("/time-capsules/{capsuleId}/invite")
-    public ResponseEntity<InviteResponseDto> generateInviteCode(@PathVariable final Long capsuleId) {
+    public ResponseEntity<InviteResponseDto> generateInviteCode(
+            @Parameter(description = "타임캡슐 ID")
+            @PathVariable final Long capsuleId) {
         final InviteResponseDto inviteResponseDto = inviteService.generateInviteCode(capsuleId);
         return ResponseEntity.ok(inviteResponseDto);
     }
 
+    @Operation(
+            summary = "공동작업자 요청",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "초대 코드를 담은 DTO",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = InviteRequestDto.class))
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "유효하지 않거나 만료된 초대 코드",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"400\", \"error\": \"INVALID_INVITE_CODE\", \"message\": \"유효하지 않거나 만료된 초대 코드입니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"))),
+            @ApiResponse(responseCode = "404", description = "타임캡슐을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"))),
+            @ApiResponse(responseCode = "409", description = "1/ 이미 보내진 요청 \t\n 2. 이미 등록 완료된 사용자",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = {
+                            @ExampleObject(name = "이미 보내진 요청", value = "{\"status\": \"409\", \"error\": \"ALREADY_REQUESTED\", \"message\": \"이미 공동작업자 요청을 보냈습니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"),
+                            @ExampleObject(name = "이미 등록 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_CONTRIBUTOR\", \"message\": \"이미 공동작업자로 등록이 완료된 사용자입니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}")
+                    }))
+    })
     @PostMapping("/time-capsule/{capsuleId}/join-request")
-    public ResponseEntity<Void> submitContributorRequest(@PathVariable final Long capsuleId, @RequestBody final InviteRequestDto requestDto, @AuthenticationPrincipal final UserDetails userDetails) {
+    public ResponseEntity<Void> submitContributorRequest(
+            @Parameter(description = "타임캡슐 ID")
+            @PathVariable final Long capsuleId,
+            @RequestBody final InviteRequestDto requestDto,
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal final UserDetails userDetails) {
         Long userId = getUserIdFromUserDetails(userDetails);
         inviteService.submitContributorRequest(capsuleId, requestDto.getCode(), userId);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(
+            summary = "공동작업자 요청 승인",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "승인/거절 여부를 담은 요청",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ProcessRequestDto.class))
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "403", description = "요청을 처리할 권한이 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}"))),
+            @ApiResponse(responseCode = "404", description = "1. 타임캡슐을 찾을 수 없음 \t\n 2. 공동작업자 요청을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = {
+                            @ExampleObject(name = "타임캡슐을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}"),
+                            @ExampleObject(name = "공동작업자 요청을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"REQUEST_NOT_FOUND\", \"message\": \"공동작업자 요청을 찾을 수 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}")
+                    })),
+    })
     @PostMapping("/time-capsule/request/{requestId}/process")
-    public ResponseEntity<Void> processContributorRequest(@PathVariable final Long requestId, @RequestBody final ProcessRequestDto requestDto, @AuthenticationPrincipal final UserDetails userDetails) throws AccessDeniedException {
+    public ResponseEntity<Void> processContributorRequest(
+            @Parameter(description = "처리할 요청의 ID", required = true)
+            @PathVariable final Long requestId,
+            @RequestBody final ProcessRequestDto requestDto,
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal final UserDetails userDetails) throws AccessDeniedException {
         Long hostId = getUserIdFromUserDetails(userDetails);
         inviteService.processContributorRequest(requestId, hostId, requestDto.isApproved());
         return ResponseEntity.ok().build();
@@ -46,14 +119,14 @@ public class InviteController {
     private Long getUserIdFromUserDetails(UserDetails userDetails) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("인증되지 않은 사용자");
+            throw new AuthException(ErrorCode.NEED_LOGIN);
         }
 
         Object principal = authentication.getPrincipal();
         if(principal instanceof UserDetails) {
             return Long.valueOf(((UserDetails) principal).getUsername());
         }else {
-            throw new IllegalStateException("사용자 ID를 가져올 수 없음");
+            throw new AuthException(ErrorCode.NEED_LOGIN);
         }
     }
 }
