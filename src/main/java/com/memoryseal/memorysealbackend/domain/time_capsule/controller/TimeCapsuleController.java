@@ -102,8 +102,27 @@ public class TimeCapsuleController {
                     examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/my\"}")))
     })
     @GetMapping("/my")
-    public  ResponseEntity<List<TimeCapsuleNameDto>> getMyTimeCapsule() {
+    public ResponseEntity<List<TimeCapsuleNameDto>> getMyTimeCapsule() {
         List<TimeCapsuleNameDto> myTimeCapsule = timeCapsuleService.getTimeCapsule();
         return ResponseEntity.ok(myTimeCapsule);
+    }
+
+    @Operation(summary = "타임캡슐 삭제")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "성공"),
+            @ApiResponse(responseCode = "401", description = "로그인 필요",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "로그인 필요", value = "{\"status\": \"401\", \"error\": \"NEED_LOGIN\", \"message\": \"로그인이 필요합니다.\", \"path\": \"/time-capsules/{capsuleId}\"}"))),
+            @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/time-capsules/{capsuleId}\"}"))),
+            @ApiResponse(responseCode = "404", description = "타임캡슐 내용을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "타임캡슐 내용을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"CONTENT_NOT_FOUND\", \"message\": \"타임캡슐을 내용을 찾을 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}\"}")))
+    })
+    @DeleteMapping("/{capsuleId}")
+    public ResponseEntity<Void> deleteTimeCapsule(@PathVariable Long capsuleId) {
+        timeCapsuleService.deleteCapsule(capsuleId);
+        return ResponseEntity.ok().build();
     }
 }

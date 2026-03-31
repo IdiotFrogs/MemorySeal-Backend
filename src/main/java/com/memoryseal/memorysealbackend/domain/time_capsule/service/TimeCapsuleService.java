@@ -18,6 +18,7 @@ import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.global.aws.service.S3Service;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -159,6 +160,34 @@ public class TimeCapsuleService {
 
         return TimeCapsuleUpdateDto.toDto(timeCapsule);
     }
+
+    @Transactional
+    public void deleteCapsule(Long capsuleId) {
+        Long currentUserId = getCurrentUserId();
+
+        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
+
+        Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
+        if(contributor.getContributorRole() != ContributorRole.HOST) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if(timeCapsule.getMainImage() != null) {
+            s3Service.deleteFileFromS3(timeCapsule.getMainImage().getFileUrl());
+        }
+        timeCapsule.getContents().forEach(content -> {
+            content.getAttachedFiles().forEach(file -> {
+                s3Service.deleteFileFromS3(file.getFileUrl());
+            });
+        });
+
+        contributorJpaRepository.deleteByTimeCapsuleId(capsuleId);
+
+        timeCapsuleJpaRepository.delete(timeCapsule);
+    }
+
 
 
 }

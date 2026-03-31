@@ -123,7 +123,7 @@ public class TimeCapsuleContentController {
 
     @Operation(summary = "타임캡슐 내용 삭제")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "204", description = "성공"),
             @ApiResponse(responseCode = "401", description = "로그인 필요",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(name = "로그인 필요", value = "{\"status\": \"401\", \"error\": \"NEED_LOGIN\", \"message\": \"로그인이 필요합니다.\", \"path\": \"/api/time-capsule-content/{contentId}\"}"))),
