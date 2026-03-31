@@ -58,11 +58,15 @@ public class UserService {
             throw new AuthException(ErrorCode.ALREADY_ONBOARDED);
         }
 
-        user.setNickname(nickname);
+        if(userJpaRepository.existsByNickname(nickname)) {
+            throw new AuthException(ErrorCode.DUPLICATE_NICKNAME);
+        }
 
         if(profileImage != null && !profileImage.isEmpty()) {
             s3Service.uploadProfileImage(profileImage, user.getId());
         }
+
+        user.setNickname(nickname);
 
         user.setIsOnboarding(true);
 
@@ -97,6 +101,7 @@ public class UserService {
         return UserDetailResponseDto.toDto(user);
     }
 
+    @Transactional
     public UserResponseDto updateMyDetail(String nickname, MultipartFile file) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null || !authentication.isAuthenticated()) {
@@ -114,6 +119,9 @@ public class UserService {
         }
         User user = userJpaRepository.findById(currentUserId).orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         if(nickname != null && !nickname.isBlank()) {
+            if(userJpaRepository.existsByNicknameAndIdNot(nickname, currentUserId)) {
+                throw new AuthException(ErrorCode.DUPLICATE_NICKNAME);
+            }
             user.setNickname(nickname);
         }
 
