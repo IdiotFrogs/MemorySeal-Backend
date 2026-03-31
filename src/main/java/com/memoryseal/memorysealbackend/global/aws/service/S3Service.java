@@ -156,10 +156,14 @@ public class S3Service {
         return cloudfrontDomain + "/" + fileName;
     }
 
-    private void deleteFileFromS3(String fileUrl) {
+    public void deleteFileFromS3(String fileUrl) {
         try {
             String decodedUrl = URLDecoder.decode(fileUrl, StandardCharsets.UTF_8);
-            String key = decodedUrl.substring(decodedUrl.indexOf(".com/") + 5);
+            int index = decodedUrl.indexOf(".com/");
+            if(index == -1) {
+                index = decodedUrl.indexOf(".net/");
+            }
+            String key = decodedUrl.substring(index + 5);
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                     .bucket(bucket)
                     .key(key)
