@@ -54,9 +54,12 @@ public class    UserController {
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/users/sign-up\"}"))),
-            @ApiResponse(responseCode = "409", description = "이미 온보딩 완료된 사용자",
+            @ApiResponse(responseCode = "409", description = "1. 이미 온보딩 완료된 사용자 \t\n 2. 이미 사용중인 닉네임",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(name = "이미 온보딩 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_ONBOARDED\", \"message\": \"이미 온보딩이 완료된 유저입니다.\", \"path\": \"/users/sign-up\"}")))
+                    examples = {
+                            @ExampleObject(name = "이미 온보딩 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_ONBOARDED\", \"message\": \"이미 온보딩이 완료된 유저입니다.\", \"path\": \"/users/sign-up\"}"),
+                            @ExampleObject(name = "이미 사용중인 닉네임", value = "{\"status\": \"409\", \"error\": \"DUPLICATE_NICKNAME\", \"message\": \"이미 사용 중인 닉네임입니다.\", \"path\": \"/users/sign-up\"}")
+                    }))
     })
     @Operation(summary = "온보딩")
     public ResponseEntity<UserResponseDto> signUpUser(
@@ -102,7 +105,10 @@ public class    UserController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/users/{userId}\"}")))
+                    examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/users/{userId}\"}"))),
+            @ApiResponse(responseCode = "409", description = "이미 사용중인 닉네임",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "이미 사용중인 닉네임", value = "{\"status\": \"409\", \"error\": \"DUPLICATE_NICKNAME\", \"message\": \"이미 사용 중인 닉네임입니다.\", \"path\": \"/users/{userId}\"}")))
     })
     @Operation(summary = "유저 정보 수정", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(required = false))
     public ResponseEntity<UserResponseDto> updateUser(
