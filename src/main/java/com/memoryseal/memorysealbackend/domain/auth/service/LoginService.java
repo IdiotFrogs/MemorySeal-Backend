@@ -114,8 +114,13 @@ public class LoginService {
                 if (email == null) {
                     throw new AuthException(ErrorCode.USER_NOT_FOUND);
                 }
-                AppleTokenResponse appleTokenResponse = appleAuthClient.getAppleToken(authorizationCode);
-                String appleRefreshToken = appleTokenResponse.getRefreshToken();
+                String appleRefreshToken = null;
+                boolean hasCode = (authorizationCode != null);
+                if(hasCode) {
+                    AppleTokenResponse appleTokenResponse = appleAuthClient.getAppleToken(authorizationCode);
+                    appleRefreshToken = appleTokenResponse.getRefreshToken();
+                }
+
 
                 AttachedFile defaultProfile = AttachedFile.builder()
                         .fileUrl(defaultProfileUrl)
