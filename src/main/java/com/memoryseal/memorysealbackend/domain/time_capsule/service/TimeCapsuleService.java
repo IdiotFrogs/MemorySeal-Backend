@@ -155,6 +155,9 @@ public class TimeCapsuleService {
 
         timeCapsule.setUpdatedAt(LocalDateTime.now());
 
+        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
+        contributors.forEach(c -> c.setBury(false));
+
         timeCapsuleJpaRepository.save(timeCapsule);
 
         return TimeCapsuleUpdateDto.toDto(timeCapsule);
