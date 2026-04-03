@@ -59,8 +59,10 @@ public class ContributorService {
                     User user = userJpaRepository.findById(contributor.getUserId())
                             .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
                     return ContributorResponseDto.builder()
-                            .userId(user.getId())
+                            .contributorRole(contributor.getContributorRole())
                             .nickname(user.getNickname())
+                            .bury(contributor.getBury())
+                            .userId(user.getId())
                             .profileImageUrl(user.getProfileImage() != null ? user.getProfileImage().getFileUrl() : null)
                             .userActiveStatus(user.getUserActiveStatus())
                             .build();
@@ -108,8 +110,9 @@ public class ContributorService {
 
         List<ContributorBuryDto> contributorBuryDtos = contributors.stream()
                 .map(c -> ContributorBuryDto.builder()
-                        .userId(c.getUserId())
+                        .contributorRole(c.getContributorRole())
                         .bury(c.getBury())
+                        .userId(c.getUserId())
                         .build())
                 .toList();
 
