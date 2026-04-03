@@ -107,14 +107,10 @@ public class ContributorService {
         }
 
         List<ContributorBuryDto> contributorBuryDtos = contributors.stream()
-                .map(c -> {
-                    User user = userJpaRepository.findById(c.getUserId())
-                            .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-                    return ContributorBuryDto.builder()
-                            .userId(c.getUserId())
-                            .bury(c.getBury())
-                            .build();
-                })
+                .map(c -> ContributorBuryDto.builder()
+                        .userId(c.getUserId())
+                        .bury(c.getBury())
+                        .build())
                 .toList();
 
         return BuryResponseDto.builder()
