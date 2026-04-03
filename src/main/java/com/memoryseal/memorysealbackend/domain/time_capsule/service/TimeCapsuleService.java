@@ -3,9 +3,6 @@ package com.memoryseal.memorysealbackend.domain.time_capsule.service;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
-import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
-import com.memoryseal.memorysealbackend.domain.file.entity.FileType;
-import com.memoryseal.memorysealbackend.domain.file.repository.AttachedFileJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleCreateResDto;
@@ -18,13 +15,12 @@ import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.global.aws.service.S3Service;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -32,6 +28,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -137,9 +135,10 @@ public class TimeCapsuleService {
                             .role(contributor.getContributorRole())
                             .build();
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
+    @Transactional
     public TimeCapsuleUpdateDto updateTimeCapsule(Long capsuleId, TimeCapsuleUpdateDto timeCapsuleUpdateDto) {
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
@@ -155,6 +154,9 @@ public class TimeCapsuleService {
         }
 
         timeCapsule.setUpdatedAt(LocalDateTime.now());
+
+        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
+        contributors.forEach(c -> c.setBury(false));
 
         timeCapsuleJpaRepository.save(timeCapsule);
 

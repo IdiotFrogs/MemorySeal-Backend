@@ -76,11 +76,8 @@ public class InviteController {
     public ResponseEntity<Void> submitContributorRequest(
             @Parameter(description = "타임캡슐 ID")
             @PathVariable final Long capsuleId,
-            @RequestBody final InviteRequestDto requestDto,
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal final UserDetails userDetails) {
-        Long userId = getUserIdFromUserDetails(userDetails);
-        inviteService.submitContributorRequest(capsuleId, requestDto.getCode(), userId);
+            @RequestBody final InviteRequestDto requestDto) {
+        inviteService.submitContributorRequest(capsuleId, requestDto.getCode());
         return ResponseEntity.ok().build();
     }
 
@@ -108,25 +105,9 @@ public class InviteController {
     public ResponseEntity<Void> processContributorRequest(
             @Parameter(description = "처리할 요청의 ID", required = true)
             @PathVariable final Long requestId,
-            @RequestBody final ProcessRequestDto requestDto,
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal final UserDetails userDetails) throws AccessDeniedException {
-        Long hostId = getUserIdFromUserDetails(userDetails);
-        inviteService.processContributorRequest(requestId, hostId, requestDto.isApproved());
+            @RequestBody final ProcessRequestDto requestDto) {
+        inviteService.processContributorRequest(requestId, requestDto.isApproved());
         return ResponseEntity.ok().build();
     }
 
-    private Long getUserIdFromUserDetails(UserDetails userDetails) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
-
-        Object principal = authentication.getPrincipal();
-        if(principal instanceof UserDetails) {
-            return Long.valueOf(((UserDetails) principal).getUsername());
-        }else {
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
-    }
 }
