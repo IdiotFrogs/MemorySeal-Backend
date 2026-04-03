@@ -8,6 +8,7 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.T
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleCreateResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleNameDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleUpdateResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
@@ -140,18 +141,25 @@ public class TimeCapsuleService {
     }
 
     @Transactional
-    public TimeCapsuleUpdateDto updateTimeCapsule(Long capsuleId, TimeCapsuleUpdateDto timeCapsuleUpdateDto) {
+    public TimeCapsuleUpdateResDto updateTimeCapsule(Long capsuleId, TimeCapsuleUpdateDto timeCapsuleUpdateDto, MultipartFile mainImage) throws IOException {
+        Long currentUserId = getCurrentUserId();
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
-        if(timeCapsuleUpdateDto.getTitle() != null) {
-            timeCapsule.setTitle(timeCapsuleUpdateDto.getTitle());
+        if(!timeCapsule.getUserId().equals(currentUserId)) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
-        if(timeCapsuleUpdateDto.getDescription() != null) {
-            timeCapsule.setDescription(timeCapsuleUpdateDto.getDescription());
-        }
-        if(timeCapsuleUpdateDto.getOpenedAt() != null) {
-            timeCapsule.setOpenedAt(timeCapsuleUpdateDto.getOpenedAt());
+
+        if(timeCapsuleUpdateDto != null) {
+            if(timeCapsuleUpdateDto.getTitle() != null) {
+                timeCapsule.setTitle(timeCapsuleUpdateDto.getTitle());
+            }
+            if(timeCapsuleUpdateDto.getDescription() != null) {
+                timeCapsule.setDescription(timeCapsuleUpdateDto.getDescription());
+            }
+            if(timeCapsuleUpdateDto.getOpenedAt() != null) {
+                timeCapsule.setOpenedAt(timeCapsuleUpdateDto.getOpenedAt());
+            }
         }
 
         timeCapsule.setUpdatedAt(LocalDateTime.now());
@@ -159,9 +167,14 @@ public class TimeCapsuleService {
         List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
         contributors.forEach(c -> c.setBury(false));
 
+        if(mainImage != null && !mainImage.isEmpty()) {
+            log.info("이미지 업로드 시도: {}", mainImage.getOriginalFilename());
+            s3Service.uploadImage(mainImage, capsuleId);
+        }
+
         timeCapsuleJpaRepository.save(timeCapsule);
 
-        return TimeCapsuleUpdateDto.toDto(timeCapsule);
+        return TimeCapsuleUpdateResDto.toDto(timeCapsule);
     }
 
     @Transactional
