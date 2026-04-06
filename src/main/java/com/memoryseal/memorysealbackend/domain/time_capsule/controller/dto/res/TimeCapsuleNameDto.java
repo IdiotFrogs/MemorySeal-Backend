@@ -28,6 +28,8 @@ public class TimeCapsuleNameDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime openedAt;
 
+    private String mainImageUrl;
+
     private TimeCapsuleStatus timeCapsuleStatus;
 
     private ContributorRole role;

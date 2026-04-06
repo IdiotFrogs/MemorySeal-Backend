@@ -8,6 +8,7 @@ import com.memoryseal.memorysealbackend.domain.contributor.repository.Contributo
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorRequestJpaRepository;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
+import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
@@ -57,7 +58,12 @@ public class InviteService {
 
 
     public InviteResponseDto generateInviteCode(final long capsuleId) {
-        timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
+        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
+
+        if(timeCapsule.getTimeCapsuleStatus() != TimeCapsuleStatus.BEFOREBURIED) {
+            throw new AuthException(ErrorCode.ALREADY_BURIED);
+        }
 
         final Optional<String> link = redisUtil.getData(INVITE_LINK_PREFIX.formatted(capsuleId), String.class);
         if(link.isEmpty()) {
