@@ -16,7 +16,7 @@ public enum ErrorCode {
     INVALID_FILE_FORMAT(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "업로드할 파일이 없습니다."),
     NOT_SUPPORT_LOGIN(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 방식입니다."),
-    INVALID_OPENED_AT(HttpStatus.BAD_REQUEST, "openedAt이 현재보다 과거입니다"),
+    INVALID_OPENED_AT(HttpStatus.BAD_REQUEST, "openedAt이 현재보다 과거입니다."),
 
     // 401 UnAuthorized
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),

@@ -63,6 +63,10 @@ public class TimeCapsuleService {
 
         log.info("타임캡슐 생성 시작 - 유저 ID: {}", currentUserId);
 
+        if(timeCapsuleCreateDto.getOpenedAt().isBefore(LocalDateTime.now())) {
+            throw new AuthException(ErrorCode.INVALID_OPENED_AT);
+        }
+
         try{
             TimeCapsule timeCapsule = TimeCapsule.builder()
                     .title(timeCapsuleCreateDto.getTitle())
@@ -161,6 +165,9 @@ public class TimeCapsuleService {
                 timeCapsule.setDescription(timeCapsuleUpdateDto.getDescription());
             }
             if(timeCapsuleUpdateDto.getOpenedAt() != null) {
+                if(timeCapsuleUpdateDto.getOpenedAt().isBefore(LocalDateTime.now())) {
+                    throw new AuthException(ErrorCode.INVALID_OPENED_AT);
+                }
                 timeCapsule.setOpenedAt(timeCapsuleUpdateDto.getOpenedAt());
             }
         }
