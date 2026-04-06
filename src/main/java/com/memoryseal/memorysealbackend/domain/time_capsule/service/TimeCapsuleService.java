@@ -146,6 +146,9 @@ public class TimeCapsuleService {
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
+        if(timeCapsule.getTimeCapsuleStatus() != TimeCapsuleStatus.BEFOREBURIED) {
+            throw new AuthException(ErrorCode.ALREADY_BURIED);
+        }
         if(!timeCapsule.getUserId().equals(currentUserId)) {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
