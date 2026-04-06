@@ -39,7 +39,10 @@ public class InviteController {
             @ApiResponse(responseCode = "201", description = "성공"),
             @ApiResponse(responseCode = "404", description = "타임캡슐을 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/invite\"}")))
+                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/invite\"}"))),
+            @ApiResponse(responseCode = "409", description = "이미 묻힌 타임캡슐임",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"409\", \"error\": \"ALREADY_BURIED\", \"message\": \"이미 묻힌 타임캡슐입니다.\", \"path\": \"/time-capsules/{capsuleId}/invite\"}")))
     })
     @PostMapping("/time-capsules/{capsuleId}/invite")
     public ResponseEntity<InviteResponseDto> generateInviteCode(
