@@ -124,6 +124,12 @@ public class    UserController {
     @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "1. 업로드할 파일이 없음 \t\n 2. 지원하지 않는 파일 형식",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = {
+                            @ExampleObject(name = "업로드할 파일이 없음", value = "{\"status\": \"400\", \"error\": \"EMPTY_FILE\", \"message\": \"업로드할 파일이 없습니다.\", \"path\": \"/users/me\"}"),
+                            @ExampleObject(name = "지원하지 않는 파일 형식", value = "{\"status\": \"400\", \"error\": \"INVALID_FILE_FORMAT\", \"message\": \"지원하지 않는 파일 형식입니다.\", \"path\": \"/users/me\"}")
+                    })),
             @ApiResponse(responseCode = "401", description = "로그인 필요",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(name = "로그인 필요", value = "{\"status\": \"401\", \"error\": \"NEED_LOGIN\", \"message\": \"로그인이 필요합니다.\", \"path\": \"/users/me\"}"))),
