@@ -69,18 +69,21 @@ public class InviteService {
         if(link.isEmpty()) {
             final String randomCode = RandomUtil.generateRandomCode('0', 'z', 10);
             redisUtil.setDataExpire(INVITE_LINK_PREFIX.formatted(capsuleId),randomCode,RedisUtil.toTomorrow());
+            // 역방향키 추가
+            redisUtil.setDataExpire("code=" + randomCode, String.valueOf(capsuleId), RedisUtil.toTomorrow());
             return new InviteResponseDto(randomCode);
         }
         return new InviteResponseDto(link.get());
     }
 
-    public void submitContributorRequest(final Long capsuleId, final String inviteCode) {
+    public void submitContributorRequest(final String inviteCode) {
         Long currentUserId = getCurrentUserId();
-        timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
-        final Optional<String> storedCode = redisUtil.getData(INVITE_LINK_PREFIX.formatted(capsuleId), String.class);
-        if(storedCode.isEmpty() || !storedCode.get().equals(inviteCode)) {
-            throw new AuthException(ErrorCode.INVALID_INVITE_CODE);
-        }
+
+        Long capsuleId = redisUtil.getData("code=" + inviteCode, Long.class)
+                        .orElseThrow(() -> new AuthException(ErrorCode.INVALID_INVITE_CODE));
+
+        timeCapsuleJpaRepository.findById(capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
 
         contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
                 .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_REQUESTED);});
@@ -113,9 +116,9 @@ public class InviteService {
                     .contributorRole(ContributorRole.CONTRIBUTOR)
                     .build();
             contributorJpaRepository.save(newContributor);
-            request.updateStatus(ContributorRequestStatus.APPROVED);
+            request.setStatus(ContributorRequestStatus.APPROVED);
         }else {
-            request.updateStatus(ContributorRequestStatus.REJECTED);
+            request.setStatus(ContributorRequestStatus.REJECTED);
         }
         contributorRequestJpaRepository.save(request);
     }

@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "tb_contributor_request")
 @NoArgsConstructor
 @Getter
+@Setter
 public class ContributorRequest {
 
     @Id
@@ -30,9 +32,5 @@ public class ContributorRequest {
         this.userId = userId;
         this.timeCapsuleId = timeCapsuleId;
         this.status = ContributorRequestStatus.PENDING;
-    }
-
-    public void updateStatus(ContributorRequestStatus status) {
-        this.status = status;
     }
 }

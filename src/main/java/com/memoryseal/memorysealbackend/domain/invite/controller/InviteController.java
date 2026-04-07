@@ -75,12 +75,10 @@ public class InviteController {
                             @ExampleObject(name = "이미 등록 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_CONTRIBUTOR\", \"message\": \"이미 공동작업자로 등록이 완료된 사용자입니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}")
                     }))
     })
-    @PostMapping("/time-capsule/{capsuleId}/join-request")
+    @PostMapping("/time-capsule/join-request")
     public ResponseEntity<Void> submitContributorRequest(
-            @Parameter(description = "타임캡슐 ID")
-            @PathVariable final Long capsuleId,
             @RequestBody final InviteRequestDto requestDto) {
-        inviteService.submitContributorRequest(capsuleId, requestDto.getCode());
+        inviteService.submitContributorRequest(requestDto.getCode());
         return ResponseEntity.ok().build();
     }
 
