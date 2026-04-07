@@ -66,15 +66,11 @@ public class InviteService {
             throw new AuthException(ErrorCode.ALREADY_BURIED);
         }
 
-        final Optional<String> link = redisUtil.getData(INVITE_LINK_PREFIX.formatted(capsuleId), String.class);
-        if(link.isEmpty()) {
-            final String randomCode = RandomUtil.generateRandomCode('0', 'z', 10);
-            redisUtil.setDataExpire(INVITE_LINK_PREFIX.formatted(capsuleId),randomCode,RedisUtil.toTomorrow());
-            // 역방향키 추가
-            redisUtil.setDataExpire("code=" + randomCode, String.valueOf(capsuleId), RedisUtil.toTomorrow());
-            return new InviteResponseDto(randomCode);
-        }
-        return new InviteResponseDto(link.get());
+        final String randomCode = RandomUtil.generateRandomCode('0', 'z', 10);
+        redisUtil.setDataExpire(INVITE_LINK_PREFIX.formatted(capsuleId),randomCode,RedisUtil.toTomorrow());
+        // 역방향키 추가
+        redisUtil.setDataExpire("code=" + randomCode, String.valueOf(capsuleId), RedisUtil.toTomorrow());
+        return new InviteResponseDto(randomCode);
     }
 
     public InviteSubmitResDto submitContributorRequest(final String inviteCode) {
@@ -112,6 +108,9 @@ public class InviteService {
 
         if(!timeCapsule.getUserId().equals(currentUserId)) {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
+        if(request.getStatus() != ContributorRequestStatus.PENDING) {
+            throw new AuthException(ErrorCode.ALREADY_PROCESSED);
         }
 
         if(isApproved) {
