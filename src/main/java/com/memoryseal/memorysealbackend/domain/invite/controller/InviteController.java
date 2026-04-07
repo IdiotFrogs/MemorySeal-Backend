@@ -3,6 +3,7 @@ package com.memoryseal.memorysealbackend.domain.invite.controller;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.InviteRequestDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.ProcessRequestDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
+import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteSubmitResDto;
 import com.memoryseal.memorysealbackend.domain.invite.service.InviteService;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
@@ -64,24 +65,23 @@ public class InviteController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "400", description = "유효하지 않거나 만료된 초대 코드",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = "{\"status\": \"400\", \"error\": \"INVALID_INVITE_CODE\", \"message\": \"유효하지 않거나 만료된 초대 코드입니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"))),
+                    examples = @ExampleObject(value = "{\"status\": \"400\", \"error\": \"INVALID_INVITE_CODE\", \"message\": \"유효하지 않거나 만료된 초대 코드입니다.\", \"path\": \"/time-capsules/join-request\"}"))),
             @ApiResponse(responseCode = "404", description = "타임캡슐을 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"))),
-            @ApiResponse(responseCode = "409", description = "1/ 이미 보내진 요청 \t\n 2. 이미 등록 완료된 사용자",
+                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/join-request\"}"))),
+            @ApiResponse(responseCode = "409", description = "1/ 이미 보내진 요청 \t\n 2. 이미 등록 완료된 사용자 \t\n 3. 이미 처리된 요청",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = {
-                            @ExampleObject(name = "이미 보내진 요청", value = "{\"status\": \"409\", \"error\": \"ALREADY_REQUESTED\", \"message\": \"이미 공동작업자 요청을 보냈습니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"),
-                            @ExampleObject(name = "이미 등록 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_CONTRIBUTOR\", \"message\": \"이미 공동작업자로 등록이 완료된 사용자입니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}")
+                            @ExampleObject(name = "이미 보내진 요청", value = "{\"status\": \"409\", \"error\": \"ALREADY_REQUESTED\", \"message\": \"이미 공동작업자 요청을 보냈습니다.\", \"path\": \"/time-capsules/join-request\"}"),
+                            @ExampleObject(name = "이미 등록 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_CONTRIBUTOR\", \"message\": \"이미 공동작업자로 등록이 완료된 사용자입니다.\", \"path\": \"/time-capsules/join-request\"}"),
+                            @ExampleObject(name = "이미 처리된 요청", value = "{\"status\": \"409\", \"error\": \"ALREADY_PROCESSED\", \"message\": \"이미 처리된 요청입니다.\", \"path\": \"/time-capsules/join-request\"}")
                     }))
     })
-    @PostMapping("/time-capsule/{capsuleId}/join-request")
-    public ResponseEntity<Void> submitContributorRequest(
-            @Parameter(description = "타임캡슐 ID")
-            @PathVariable final Long capsuleId,
+    @PostMapping("/time-capsule/join-request")
+    public ResponseEntity<InviteSubmitResDto> submitContributorRequest(
             @RequestBody final InviteRequestDto requestDto) {
-        inviteService.submitContributorRequest(capsuleId, requestDto.getCode());
-        return ResponseEntity.ok().build();
+        InviteSubmitResDto response = inviteService.submitContributorRequest(requestDto.getCode());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
@@ -103,14 +103,17 @@ public class InviteController {
                             @ExampleObject(name = "타임캡슐을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}"),
                             @ExampleObject(name = "공동작업자 요청을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"REQUEST_NOT_FOUND\", \"message\": \"공동작업자 요청을 찾을 수 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}")
                     })),
+            @ApiResponse(responseCode = "409", description = "이미 묻힌 타임캡슐임",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"409\", \"error\": \"ALREADY_BURIED\", \"message\": \"이미 묻힌 타임캡슐입니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}")))
     })
     @PostMapping("/time-capsule/request/{requestId}/process")
-    public ResponseEntity<Void> processContributorRequest(
+    public ResponseEntity<InviteSubmitResDto> processContributorRequest(
             @Parameter(description = "처리할 요청의 ID", required = true)
             @PathVariable final Long requestId,
             @RequestBody final ProcessRequestDto requestDto) {
-        inviteService.processContributorRequest(requestId, requestDto.isApproved());
-        return ResponseEntity.ok().build();
+        InviteSubmitResDto response = inviteService.processContributorRequest(requestId, requestDto.isApproved());
+        return ResponseEntity.ok(response);
     }
 
 }

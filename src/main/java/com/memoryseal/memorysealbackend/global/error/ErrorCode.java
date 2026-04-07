@@ -34,12 +34,13 @@ public enum ErrorCode {
     REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "공동작업자 요청을 찾을 수 없습니다."),
     CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "타임캡슐 내용을 찾을 수 없습니다."),
 
-    // 409 CONFLiCT(중복된 상태)
+    // 409 CONFLICT(중복된 상태)
     ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 공동작업자 요청을 보냈습니다."),
     ALREADY_CONTRIBUTOR(HttpStatus.CONFLICT, "이미 공동작업자로 등록이 완료된 사용자입니다."),
     ALREADY_ONBOARDED(HttpStatus.CONFLICT, "이미 온보딩이 완료된 유저입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     ALREADY_BURIED(HttpStatus.CONFLICT, "이미 묻힌 타임캡슐입니다."),
+    ALREADY_PROCESSED(HttpStatus.CONFLICT, "이미 처리된 요청입니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),

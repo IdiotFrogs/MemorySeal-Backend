@@ -7,6 +7,7 @@ import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRol
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorRequestJpaRepository;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
+import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteSubmitResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
@@ -65,21 +66,23 @@ public class InviteService {
             throw new AuthException(ErrorCode.ALREADY_BURIED);
         }
 
-        final Optional<String> link = redisUtil.getData(INVITE_LINK_PREFIX.formatted(capsuleId), String.class);
-        if(link.isEmpty()) {
-            final String randomCode = RandomUtil.generateRandomCode('0', 'z', 10);
-            redisUtil.setDataExpire(INVITE_LINK_PREFIX.formatted(capsuleId),randomCode,RedisUtil.toTomorrow());
-            return new InviteResponseDto(randomCode);
-        }
-        return new InviteResponseDto(link.get());
+        final String randomCode = RandomUtil.generateRandomCode('0', 'z', 10);
+        redisUtil.setDataExpire(INVITE_LINK_PREFIX.formatted(capsuleId),randomCode,RedisUtil.toTomorrow());
+        // 역방향키 추가
+        redisUtil.setDataExpire("code=" + randomCode, String.valueOf(capsuleId), RedisUtil.toTomorrow());
+        return new InviteResponseDto(randomCode);
     }
 
-    public void submitContributorRequest(final Long capsuleId, final String inviteCode) {
+    public InviteSubmitResDto submitContributorRequest(final String inviteCode) {
         Long currentUserId = getCurrentUserId();
-        timeCapsuleJpaRepository.findById(capsuleId).orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
-        final Optional<String> storedCode = redisUtil.getData(INVITE_LINK_PREFIX.formatted(capsuleId), String.class);
-        if(storedCode.isEmpty() || !storedCode.get().equals(inviteCode)) {
-            throw new AuthException(ErrorCode.INVALID_INVITE_CODE);
+
+        Long capsuleId = redisUtil.getData("code=" + inviteCode, Long.class)
+                        .orElseThrow(() -> new AuthException(ErrorCode.INVALID_INVITE_CODE));
+
+        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
+        if(timeCapsule.getTimeCapsuleStatus() != TimeCapsuleStatus.BEFOREBURIED) {
+            throw new AuthException(ErrorCode.ALREADY_BURIED);
         }
 
         contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
@@ -92,9 +95,10 @@ public class InviteService {
                 .timeCapsuleId(capsuleId)
                 .build();
         contributorRequestJpaRepository.save(newRequest);
+        return InviteSubmitResDto.toDto(newRequest);
     }
 
-    public void processContributorRequest(final Long requestId, final boolean isApproved) {
+    public InviteSubmitResDto processContributorRequest(final Long requestId, final boolean isApproved) {
         Long currentUserId = getCurrentUserId();
         ContributorRequest request = contributorRequestJpaRepository.findById(requestId)
                 .orElseThrow(() -> new AuthException(ErrorCode.REQUEST_NOT_FOUND));
@@ -105,6 +109,9 @@ public class InviteService {
         if(!timeCapsule.getUserId().equals(currentUserId)) {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
+        if(request.getStatus() != ContributorRequestStatus.PENDING) {
+            throw new AuthException(ErrorCode.ALREADY_PROCESSED);
+        }
 
         if(isApproved) {
             final Contributor newContributor = Contributor.builder()
@@ -113,10 +120,11 @@ public class InviteService {
                     .contributorRole(ContributorRole.CONTRIBUTOR)
                     .build();
             contributorJpaRepository.save(newContributor);
-            request.updateStatus(ContributorRequestStatus.APPROVED);
+            request.setStatus(ContributorRequestStatus.APPROVED);
         }else {
-            request.updateStatus(ContributorRequestStatus.REJECTED);
+            request.setStatus(ContributorRequestStatus.REJECTED);
         }
         contributorRequestJpaRepository.save(request);
+        return InviteSubmitResDto.toDto(request);
     }
 }
