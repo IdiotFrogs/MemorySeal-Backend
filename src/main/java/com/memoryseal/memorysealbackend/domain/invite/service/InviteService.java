@@ -83,8 +83,11 @@ public class InviteService {
         Long capsuleId = redisUtil.getData("code=" + inviteCode, Long.class)
                         .orElseThrow(() -> new AuthException(ErrorCode.INVALID_INVITE_CODE));
 
-        timeCapsuleJpaRepository.findById(capsuleId)
+        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
                 .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
+        if(timeCapsule.getTimeCapsuleStatus() != TimeCapsuleStatus.BEFOREBURIED) {
+            throw new AuthException(ErrorCode.ALREADY_BURIED);
+        }
 
         contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
                 .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_REQUESTED);});

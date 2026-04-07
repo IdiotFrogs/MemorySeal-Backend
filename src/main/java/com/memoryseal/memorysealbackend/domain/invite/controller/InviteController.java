@@ -65,15 +65,15 @@ public class InviteController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "400", description = "유효하지 않거나 만료된 초대 코드",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = "{\"status\": \"400\", \"error\": \"INVALID_INVITE_CODE\", \"message\": \"유효하지 않거나 만료된 초대 코드입니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"))),
+                    examples = @ExampleObject(value = "{\"status\": \"400\", \"error\": \"INVALID_INVITE_CODE\", \"message\": \"유효하지 않거나 만료된 초대 코드입니다.\", \"path\": \"/time-capsules/join-request\"}"))),
             @ApiResponse(responseCode = "404", description = "타임캡슐을 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"))),
+                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/join-request\"}"))),
             @ApiResponse(responseCode = "409", description = "1/ 이미 보내진 요청 \t\n 2. 이미 등록 완료된 사용자",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = {
-                            @ExampleObject(name = "이미 보내진 요청", value = "{\"status\": \"409\", \"error\": \"ALREADY_REQUESTED\", \"message\": \"이미 공동작업자 요청을 보냈습니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}"),
-                            @ExampleObject(name = "이미 등록 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_CONTRIBUTOR\", \"message\": \"이미 공동작업자로 등록이 완료된 사용자입니다.\", \"path\": \"/time-capsules/{capsuleId}/join-request\"}")
+                            @ExampleObject(name = "이미 보내진 요청", value = "{\"status\": \"409\", \"error\": \"ALREADY_REQUESTED\", \"message\": \"이미 공동작업자 요청을 보냈습니다.\", \"path\": \"/time-capsules/join-request\"}"),
+                            @ExampleObject(name = "이미 등록 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_CONTRIBUTOR\", \"message\": \"이미 공동작업자로 등록이 완료된 사용자입니다.\", \"path\": \"/time-capsules/join-request\"}")
                     }))
     })
     @PostMapping("/time-capsule/join-request")
@@ -102,6 +102,9 @@ public class InviteController {
                             @ExampleObject(name = "타임캡슐을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}"),
                             @ExampleObject(name = "공동작업자 요청을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"REQUEST_NOT_FOUND\", \"message\": \"공동작업자 요청을 찾을 수 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}")
                     })),
+            @ApiResponse(responseCode = "409", description = "이미 묻힌 타임캡슐임",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"409\", \"error\": \"ALREADY_BURIED\", \"message\": \"이미 묻힌 타임캡슐입니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}")))
     })
     @PostMapping("/time-capsule/request/{requestId}/process")
     public ResponseEntity<InviteSubmitResDto> processContributorRequest(
