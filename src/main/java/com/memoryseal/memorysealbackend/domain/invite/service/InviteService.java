@@ -7,6 +7,7 @@ import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRol
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorRequestJpaRepository;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
+import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteSubmitResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
@@ -76,7 +77,7 @@ public class InviteService {
         return new InviteResponseDto(link.get());
     }
 
-    public void submitContributorRequest(final String inviteCode) {
+    public InviteSubmitResDto submitContributorRequest(final String inviteCode) {
         Long currentUserId = getCurrentUserId();
 
         Long capsuleId = redisUtil.getData("code=" + inviteCode, Long.class)
@@ -95,9 +96,10 @@ public class InviteService {
                 .timeCapsuleId(capsuleId)
                 .build();
         contributorRequestJpaRepository.save(newRequest);
+        return InviteSubmitResDto.toDto(newRequest);
     }
 
-    public void processContributorRequest(final Long requestId, final boolean isApproved) {
+    public InviteSubmitResDto processContributorRequest(final Long requestId, final boolean isApproved) {
         Long currentUserId = getCurrentUserId();
         ContributorRequest request = contributorRequestJpaRepository.findById(requestId)
                 .orElseThrow(() -> new AuthException(ErrorCode.REQUEST_NOT_FOUND));
@@ -121,5 +123,6 @@ public class InviteService {
             request.setStatus(ContributorRequestStatus.REJECTED);
         }
         contributorRequestJpaRepository.save(request);
+        return InviteSubmitResDto.toDto(request);
     }
 }

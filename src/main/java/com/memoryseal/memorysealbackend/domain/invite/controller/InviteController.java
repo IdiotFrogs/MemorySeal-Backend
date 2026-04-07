@@ -3,6 +3,7 @@ package com.memoryseal.memorysealbackend.domain.invite.controller;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.InviteRequestDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.ProcessRequestDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
+import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteSubmitResDto;
 import com.memoryseal.memorysealbackend.domain.invite.service.InviteService;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
@@ -76,10 +77,10 @@ public class InviteController {
                     }))
     })
     @PostMapping("/time-capsule/join-request")
-    public ResponseEntity<Void> submitContributorRequest(
+    public ResponseEntity<InviteSubmitResDto> submitContributorRequest(
             @RequestBody final InviteRequestDto requestDto) {
-        inviteService.submitContributorRequest(requestDto.getCode());
-        return ResponseEntity.ok().build();
+        InviteSubmitResDto response = inviteService.submitContributorRequest(requestDto.getCode());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
@@ -103,12 +104,12 @@ public class InviteController {
                     })),
     })
     @PostMapping("/time-capsule/request/{requestId}/process")
-    public ResponseEntity<Void> processContributorRequest(
+    public ResponseEntity<InviteSubmitResDto> processContributorRequest(
             @Parameter(description = "처리할 요청의 ID", required = true)
             @PathVariable final Long requestId,
             @RequestBody final ProcessRequestDto requestDto) {
-        inviteService.processContributorRequest(requestId, requestDto.isApproved());
-        return ResponseEntity.ok().build();
+        InviteSubmitResDto response = inviteService.processContributorRequest(requestId, requestDto.isApproved());
+        return ResponseEntity.ok(response);
     }
 
 }
