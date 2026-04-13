@@ -45,4 +45,6 @@ public class TimeCapsuleResponseDto {
 
     private ContributorRole userRole;
 
+    private BuryCheckResDto buryCheckResDto;
+
 }

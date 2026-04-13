@@ -5,10 +5,7 @@ import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRol
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleCreateResDto;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleNameDto;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleUpdateResDto;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.*;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
@@ -112,6 +109,18 @@ public class TimeCapsuleService {
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(id).orElseThrow(
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
+
+        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(id);
+        Long memberCount = (long) contributors.size();
+        Long trueCount = contributors.stream()
+                .filter(c -> c.getBury() != null && c.getBury())
+                .count();
+
+        BuryCheckResDto buryCheckResDto = BuryCheckResDto.builder()
+                .memberCount(memberCount)
+                .trueCount(trueCount)
+                .build();
+
         return TimeCapsuleResponseDto.builder()
                 .title(timeCapsule.getTitle())
                 .description(timeCapsule.getDescription())
@@ -121,6 +130,7 @@ public class TimeCapsuleService {
                 .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                 .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
                 .userRole(contributor.getContributorRole())
+                .buryCheckResDto(buryCheckResDto)
                 .build();
     }
 
