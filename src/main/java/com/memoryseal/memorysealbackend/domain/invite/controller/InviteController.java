@@ -77,7 +77,7 @@ public class InviteController {
                             @ExampleObject(name = "이미 처리된 요청", value = "{\"status\": \"409\", \"error\": \"ALREADY_PROCESSED\", \"message\": \"이미 처리된 요청입니다.\", \"path\": \"/time-capsules/join-request\"}")
                     }))
     })
-    @PostMapping("/time-capsule/join-request")
+    @PostMapping("/time-capsules/join-request")
     public ResponseEntity<InviteSubmitResDto> submitContributorRequest(
             @RequestBody final InviteRequestDto requestDto) {
         InviteSubmitResDto response = inviteService.submitContributorRequest(requestDto.getCode());
@@ -107,7 +107,7 @@ public class InviteController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(value = "{\"status\": \"409\", \"error\": \"ALREADY_BURIED\", \"message\": \"이미 묻힌 타임캡슐입니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}")))
     })
-    @PostMapping("/time-capsule/request/{requestId}/process")
+    @PostMapping("/time-capsules/request/{requestId}/process")
     public ResponseEntity<InviteSubmitResDto> processContributorRequest(
             @Parameter(description = "처리할 요청의 ID", required = true)
             @PathVariable final Long requestId,
