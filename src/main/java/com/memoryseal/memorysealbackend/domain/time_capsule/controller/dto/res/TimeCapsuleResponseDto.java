@@ -1,6 +1,7 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +27,12 @@ public class TimeCapsuleResponseDto {
 
     private String description;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
+    private LocalDateTime createdAt;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime buriedAt;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
@@ -36,18 +43,6 @@ public class TimeCapsuleResponseDto {
 
     private TimeCapsuleStatus timeCapsuleStatus;
 
-    public static TimeCapsuleResponseDto toDto(TimeCapsule timeCapsule) {
-        if (timeCapsule == null) {
-            return null;
-        }else {
-            return TimeCapsuleResponseDto.builder()
-                    .title(timeCapsule.getTitle())
-                    .description(timeCapsule.getDescription())
-                    .buriedAt(timeCapsule.getBuriedAt())
-                    .openedAt(timeCapsule.getOpenedAt())
-                    .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
-                    .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
-                    .build();
-        }
-    }
+    private ContributorRole userRole;
+
 }
