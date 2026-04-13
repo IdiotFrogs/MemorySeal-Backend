@@ -2,6 +2,7 @@ package com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
+import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,7 +32,9 @@ public class TimeCapsuleResponseDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime openedAt;
 
-    private Boolean timeCapsuleActiveStatus;
+    private String mainImageUrl;
+
+    private TimeCapsuleStatus timeCapsuleStatus;
 
     public static TimeCapsuleResponseDto toDto(TimeCapsule timeCapsule) {
         if (timeCapsule == null) {
@@ -42,7 +45,8 @@ public class TimeCapsuleResponseDto {
                     .description(timeCapsule.getDescription())
                     .buriedAt(timeCapsule.getBuriedAt())
                     .openedAt(timeCapsule.getOpenedAt())
-                    .timeCapsuleActiveStatus(timeCapsule.getTimeCapsuleActiveStatus())
+                    .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
+                    .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
                     .build();
         }
     }
