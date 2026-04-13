@@ -1,9 +1,11 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.service;
 
+import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import com.memoryseal.memorysealbackend.domain.file.entity.FileType;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleContentRequest;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentListResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleContent;
@@ -107,17 +109,20 @@ public class TimeCapsuleContentService {
         return TimeCapsuleContentResDto.toDto(content);
     }
 
-    public List<TimeCapsuleContentResDto> getMyContent(Long timeCapsuleId) {
+    public TimeCapsuleContentListResDto getMyContent(Long timeCapsuleId) {
         Long currentUserId = getCurrentUserId();
-        if(!contributorJpaRepository.existsByTimeCapsuleIdAndUserId(timeCapsuleId, currentUserId)) {
-            throw new AuthException(ErrorCode.ACCESS_DENIED);
-        }
+        Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, timeCapsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
 
         List<TimeCapsuleContent> contents = contentJpaRepository.findByTimeCapsuleId(timeCapsuleId);
-
-        return contents.stream()
+        List<TimeCapsuleContentResDto> contentDtos = contents.stream()
                 .map(TimeCapsuleContentResDto::toDto)
                 .toList();
+
+        return TimeCapsuleContentListResDto.builder()
+                .myRole(contributor.getContributorRole())
+                .contents(contentDtos)
+                .build();
     }
 
     @Transactional
