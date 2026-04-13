@@ -58,13 +58,17 @@ public class ContributorService {
                 .map(contributor -> {
                     User user = userJpaRepository.findById(contributor.getUserId())
                             .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+                    boolean isMe = false;
+                    if(user.getId().equals(currentUserId)) {
+                        isMe = true;
+                    }
                     return ContributorResponseDto.builder()
                             .contributorRole(contributor.getContributorRole())
                             .nickname(user.getNickname())
-                            .bury(contributor.getBury())
                             .userId(user.getId())
                             .profileImageUrl(user.getProfileImage() != null ? user.getProfileImage().getFileUrl() : null)
                             .userActiveStatus(user.getUserActiveStatus())
+                            .isMe(isMe)
                             .build();
                 })
                 .collect(Collectors.toList());

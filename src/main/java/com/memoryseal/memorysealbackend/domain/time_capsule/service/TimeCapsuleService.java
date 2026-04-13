@@ -106,10 +106,22 @@ public class TimeCapsuleService {
     }
 
     public TimeCapsuleResponseDto getDetail(Long id) {
+        Long currentUserId = getCurrentUserId();
+        Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, id)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(id).orElseThrow(
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
-        return TimeCapsuleResponseDto.toDto(timeCapsule);
+        return TimeCapsuleResponseDto.builder()
+                .title(timeCapsule.getTitle())
+                .description(timeCapsule.getDescription())
+                .createdAt(timeCapsule.getCreatedAt())
+                .buriedAt(timeCapsule.getBuriedAt())
+                .openedAt(timeCapsule.getOpenedAt())
+                .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
+                .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
+                .userRole(contributor.getContributorRole())
+                .build();
     }
 
     public List<TimeCapsuleNameDto> getTimeCapsule() {

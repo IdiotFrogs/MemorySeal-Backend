@@ -30,6 +30,8 @@ public class ContributorResponseDto {
 
     private Boolean userActiveStatus;
 
+    private Boolean isMe;
+
     /*
     public static ContributorResponseDto toDto(Contributor contributor) {
         if (contributor == null) {
