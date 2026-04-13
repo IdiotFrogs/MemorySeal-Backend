@@ -71,7 +71,7 @@ public class ContributorController {
                     examples = @ExampleObject(name = "이미 묻힌 타임캡슐", value = "{\"status\": \"409\", \"error\": \"ALREADY_BURIED\", \"message\": \"이미 묻힌 타임캡슐입니다.\", \"path\": \"/time-capsules/{capsuleId}/bury/agree\"}")))
     })
     @PutMapping("/{capsuleId}/bury/agree")
-    @Operation(summary = "묻기 여부")
+    @Operation(summary = "투표")
     public ResponseEntity<BuryResponseDto> agreeBury(@PathVariable Long capsuleId, @RequestParam boolean agree) {
         return ResponseEntity.ok(contributorService.agreeBury(capsuleId, agree));
     }
