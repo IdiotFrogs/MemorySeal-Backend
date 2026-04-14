@@ -76,10 +76,10 @@ public class InviteController {
                     }))
     })
     @PostMapping("/time-capsules/join-request")
-    public ResponseEntity<InviteSubmitResDto> submitContributorRequest(
+    public ResponseEntity<Void> submitContributorRequest(
             @RequestBody final InviteRequestDto requestDto) {
-        InviteSubmitResDto response = inviteService.submitContributorRequest(requestDto.getCode());
-        return ResponseEntity.ok(response);
+        inviteService.submitContributorRequest(requestDto.getCode());
+        return ResponseEntity.ok().build();
     }
 
     @Operation(
@@ -106,12 +106,12 @@ public class InviteController {
                     examples = @ExampleObject(name = "이미 처리된 요청", value = "{\"status\": \"409\", \"error\": \"ALREADY_PROCESSED\", \"message\": \"이미 처리된 요청입니다.\", \"path\": \"/time-capsules/request/{capsuleId}/{requestId}/process\"}")))
     })
     @PostMapping("/time-capsules/request/{requestId}/process")
-    public ResponseEntity<InviteSubmitResDto> processContributorRequest(
+    public ResponseEntity<Void> processContributorRequest(
             @Parameter(description = "처리할 요청의 ID", required = true)
             @PathVariable final Long requestId,
             @RequestBody final ProcessRequestDto requestDto) {
-        InviteSubmitResDto response = inviteService.processContributorRequest(requestId, requestDto.isApproved());
-        return ResponseEntity.ok(response);
+        inviteService.processContributorRequest(requestId, requestDto.isApproved());
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "공동작업자 요청 목록 조회")
