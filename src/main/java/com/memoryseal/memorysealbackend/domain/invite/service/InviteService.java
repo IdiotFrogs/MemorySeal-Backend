@@ -77,7 +77,7 @@ public class InviteService {
         return new InviteResponseDto(randomCode);
     }
 
-    public InviteSubmitResDto submitContributorRequest(final String inviteCode) {
+    public void submitContributorRequest(final String inviteCode) {
         Long currentUserId = getCurrentUserId();
 
         Long capsuleId = redisUtil.getData("code=" + inviteCode, Long.class)
@@ -99,7 +99,7 @@ public class InviteService {
             if(request.getStatus() == ContributorRequestStatus.REJECTED) {
                 request.setStatus(ContributorRequestStatus.PENDING);
                 contributorRequestJpaRepository.save(request);
-                return InviteSubmitResDto.toDto(request);
+                return ;
             }
             throw new AuthException(ErrorCode.ALREADY_REQUESTED);
         }
@@ -109,10 +109,9 @@ public class InviteService {
                 .timeCapsuleId(capsuleId)
                 .build();
         contributorRequestJpaRepository.save(newRequest);
-        return InviteSubmitResDto.toDto(newRequest);
     }
 
-    public InviteSubmitResDto processContributorRequest(final Long requestId, final boolean isApproved) {
+    public void processContributorRequest(final Long requestId, final boolean isApproved) {
         Long currentUserId = getCurrentUserId();
         ContributorRequest request = contributorRequestJpaRepository.findById(requestId)
                 .orElseThrow(() -> new AuthException(ErrorCode.REQUEST_NOT_FOUND));
@@ -139,7 +138,6 @@ public class InviteService {
             request.setStatus(ContributorRequestStatus.REJECTED);
         }
         contributorRequestJpaRepository.save(request);
-        return InviteSubmitResDto.toDto(request);
     }
 
     public List<ContributorRequestResDto> getReqeustsDetail(Long capsuleId) {
