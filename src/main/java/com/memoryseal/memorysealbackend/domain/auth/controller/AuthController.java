@@ -2,7 +2,6 @@ package com.memoryseal.memorysealbackend.domain.auth.controller;
 
 import com.memoryseal.memorysealbackend.domain.auth.controller.dto.req.AppleLoginRequest;
 import com.memoryseal.memorysealbackend.domain.auth.controller.dto.req.GoogleLoginRequest;
-import com.memoryseal.memorysealbackend.domain.auth.controller.dto.res.LoginResponseDto;
 import com.memoryseal.memorysealbackend.domain.auth.service.RefreshTokenService;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
 import com.memoryseal.memorysealbackend.global.security.jwt.GeneratedToken;

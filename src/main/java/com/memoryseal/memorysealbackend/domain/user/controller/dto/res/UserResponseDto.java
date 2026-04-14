@@ -14,15 +14,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Schema(
         description = "사용자 정보 수정 응답 DTO",
-        requiredProperties = {"nickname", "profileImageUrl", "email"}
+        requiredProperties = {"id", "nickname", "profileImageUrl", "email"}
 )
 public class UserResponseDto {
+    @Schema(description = "유저 ID")
     private Long id;
 
+    @Schema(description = "유저 닉네임")
     private String nickname;
 
+    @Schema(description = "유저 프로필 이미지 URL")
     private String profileImageUrl;
 
+    @Schema(description = "유저 이메일")
     private String email;
 
     /*public UserResponseDto(User user) {

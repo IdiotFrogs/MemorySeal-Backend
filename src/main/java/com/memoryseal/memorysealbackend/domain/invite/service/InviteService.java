@@ -8,7 +8,6 @@ import com.memoryseal.memorysealbackend.domain.contributor.repository.Contributo
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorRequestJpaRepository;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.ContributorRequestResDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
-import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteSubmitResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;

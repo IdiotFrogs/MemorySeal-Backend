@@ -1,9 +1,7 @@
 package com.memoryseal.memorysealbackend.domain.user.controller;
 
-import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserCreateDto;
 import com.memoryseal.memorysealbackend.domain.user.controller.dto.res.UserDetailResponseDto;
 import com.memoryseal.memorysealbackend.domain.user.controller.dto.res.UserResponseDto;
-import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserUpdateDto;
 import com.memoryseal.memorysealbackend.domain.user.service.UserService;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;

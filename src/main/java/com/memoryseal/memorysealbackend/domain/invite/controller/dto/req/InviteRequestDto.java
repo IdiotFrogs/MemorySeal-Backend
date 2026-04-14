@@ -11,9 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(
-        description = "공동작업자 요청시 사용되는 요청 DTO",
+        description = "공동작업자 요청시 사용되는 초대코드 DTO",
         requiredProperties = {"code"}
 )
 public class InviteRequestDto {
+    @Schema(description = "초대 코드")
     private String code;
 }
