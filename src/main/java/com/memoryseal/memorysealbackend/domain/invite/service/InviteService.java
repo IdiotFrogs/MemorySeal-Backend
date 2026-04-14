@@ -6,23 +6,26 @@ import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorReq
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorRequestJpaRepository;
+import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.ContributorRequestResDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteSubmitResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
+import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import com.memoryseal.memorysealbackend.global.redis.util.RandomUtil;
 import com.memoryseal.memorysealbackend.global.redis.util.RedisUtil;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -34,6 +37,7 @@ public class InviteService {
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
     private final ContributorJpaRepository contributorJpaRepository;
     private final ContributorRequestJpaRepository contributorRequestJpaRepository;
+    private final UserJpaRepository userJpaRepository;
 
     private static final String INVITE_LINK_PREFIX = "id=%d";
 
@@ -85,10 +89,20 @@ public class InviteService {
             throw new AuthException(ErrorCode.ALREADY_BURIED);
         }
 
-        contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
-                .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_REQUESTED);});
         contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
-                .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_CONTRIBUTOR);});
+                        .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_CONTRIBUTOR);});
+
+        Optional<ContributorRequest> existingRequest = contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId);
+
+        if(existingRequest.isPresent()) {
+            ContributorRequest request = existingRequest.get();
+            if(request.getStatus() == ContributorRequestStatus.REJECTED) {
+                request.setStatus(ContributorRequestStatus.PENDING);
+                contributorRequestJpaRepository.save(request);
+                return InviteSubmitResDto.toDto(request);
+            }
+            throw new AuthException(ErrorCode.ALREADY_REQUESTED);
+        }
 
         final ContributorRequest newRequest = ContributorRequest.builder()
                 .userId(currentUserId)
@@ -126,5 +140,30 @@ public class InviteService {
         }
         contributorRequestJpaRepository.save(request);
         return InviteSubmitResDto.toDto(request);
+    }
+
+    public List<ContributorRequestResDto> getReqeustsDetail(Long capsuleId) {
+        Long currentUserId = getCurrentUserId();
+
+        timeCapsuleJpaRepository.findById(capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
+
+        Contributor contributor = contributorJpaRepository
+                .findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
+
+        if(contributor.getContributorRole() != ContributorRole.HOST) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
+
+        List<ContributorRequest> requests = contributorRequestJpaRepository.findByTimeCapsuleId(capsuleId);
+
+        return requests.stream()
+                .map(r -> {
+                    User user = userJpaRepository.findById(r.getUserId())
+                            .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+                    return ContributorRequestResDto.toDto(r, user);
+                })
+                .toList();
     }
 }
