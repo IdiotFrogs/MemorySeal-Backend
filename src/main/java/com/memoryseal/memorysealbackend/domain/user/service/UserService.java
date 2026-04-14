@@ -36,6 +36,23 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AppleAuthClient appleAuthClient;
 
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication == null || !authentication.isAuthenticated()) {
+            throw new AuthException(ErrorCode.NEED_LOGIN);
+        }
+        Object principal = authentication.getPrincipal();
+        Long currentUserId;
+        if(principal instanceof User) {
+            currentUserId = ((User) principal).getId();
+        }else if(principal instanceof String) {
+            currentUserId = Long.valueOf((String) principal);
+        }else {
+            log.error("예상치 못한 Principal 타입: {}", principal.getClass().getName());
+            throw new AuthException(ErrorCode.NEED_LOGIN);
+        }
+        return currentUserId;
+    }
 
     public User createUser(UserCreateDto userCreateDTO) {
         User user = User.builder()
@@ -82,20 +99,7 @@ public class UserService {
     }
 
     public UserDetailResponseDto getMyDetail() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
-        Object principal = authentication.getPrincipal();
-        Long currentUserId;
-        if(principal instanceof User) {
-            currentUserId = ((User) principal).getId();
-        }else if(principal instanceof String) {
-            currentUserId = Long.valueOf((String) principal);
-        }else {
-            log.error("예상치 못한 Principal 타입: {}", principal.getClass().getName());
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
+        Long currentUserId = getCurrentUserId();
         User user = userJpaRepository.findById(currentUserId).orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
 
         return UserDetailResponseDto.toDto(user);
@@ -103,20 +107,7 @@ public class UserService {
 
     @Transactional
     public UserResponseDto updateMyDetail(String nickname, MultipartFile file) throws IOException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
-        Object principal = authentication.getPrincipal();
-        Long currentUserId;
-        if(principal instanceof User) {
-            currentUserId = ((User) principal).getId();
-        }else if(principal instanceof String) {
-            currentUserId = Long.valueOf((String) principal);
-        }else {
-            log.error("예상치 못한 Principal 타입: {}", principal.getClass().getName());
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
+        Long currentUserId = getCurrentUserId();
         User user = userJpaRepository.findById(currentUserId).orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         if(nickname != null && !nickname.isBlank()) {
             if(userJpaRepository.existsByNicknameAndIdNot(nickname, currentUserId)) {
@@ -156,18 +147,15 @@ public class UserService {
 
     @Transactional
     public void withdrawUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long currentUserId = getCurrentUserId();
 
-        if(authentication == null || !(authentication.getPrincipal() instanceof User user)) {
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
-
-        String email = authentication.getName();
+        User user = userJpaRepository.findById(currentUserId)
+                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
 
         if("apple".equals(user.getProvider()) && user.getAppleRefreshToken() != null) {
             try {
                 appleAuthClient.revokeAppleToken(user.getAppleRefreshToken());
-                log.info("Apple 연동 해제 완료: {}", email);
+                log.info("Apple 연동 해제 완료: {}", user.getEmail());
             } catch (Exception e) {
                 log.error("Apple 연동 해제 실패: {}", e.getMessage());
             }
@@ -186,8 +174,8 @@ public class UserService {
         user.setProfileImage(null);
         user.setAppleRefreshToken(null);
 
-        refreshTokenRepository.deleteById(email);
+        refreshTokenRepository.deleteById(user.getEmail());
 
-        log.info("유저 탈퇴 처리 완료: {}", email);
+        log.info("유저 탈퇴 처리 완료: ID = {}, Email = {}", currentUserId, user.getEmail());
     }
 }

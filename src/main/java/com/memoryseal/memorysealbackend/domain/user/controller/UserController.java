@@ -149,8 +149,11 @@ public class    UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "탈퇴 성공"),
             @ApiResponse(responseCode = "401", description = "로그인 필요",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-            examples = @ExampleObject(name = "로그인 필요", value = "{\"status\": \"401\", \"error\": \"NEED_LOGIN\", \"message\": \"로그인이 필요합니다.\", \"path\": \"/users/me\"}")))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "로그인 필요", value = "{\"status\": \"401\", \"error\": \"NEED_LOGIN\", \"message\": \"로그인이 필요합니다.\", \"path\": \"/users/me\"}"))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/users/me\"}"))),
     })
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdrawUser() {
