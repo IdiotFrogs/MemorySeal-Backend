@@ -4,7 +4,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import com.memoryseal.memorysealbackend.domain.auth.controller.dto.res.LoginResponseDto;
 import com.memoryseal.memorysealbackend.domain.auth.entity.Role;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import com.memoryseal.memorysealbackend.domain.file.entity.FileType;
@@ -19,7 +18,6 @@ import com.memoryseal.memorysealbackend.global.security.config.GoogleProperties;
 import com.memoryseal.memorysealbackend.global.security.jwt.GeneratedToken;
 import com.memoryseal.memorysealbackend.global.security.jwt.JwtUtil;
 import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +33,6 @@ public class LoginService {
     private final RefreshTokenService refreshTokenService;
     private final UserJpaRepository userJpaRepository;
     private final GoogleProperties googleProperties;
-    private final AppleProperties appleProperties;
     private final AppleAuthClient appleAuthClient;
 
     /*
