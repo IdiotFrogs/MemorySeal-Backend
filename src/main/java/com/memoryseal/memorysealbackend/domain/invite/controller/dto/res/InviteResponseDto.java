@@ -13,5 +13,6 @@ import lombok.Data;
         requiredProperties = {"code"}
 )
 public class InviteResponseDto {
+    @Schema(description = "초대 코드")
     private String code;
 }

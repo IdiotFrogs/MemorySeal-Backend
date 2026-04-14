@@ -4,11 +4,8 @@ import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.InviteR
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.ProcessRequestDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.ContributorRequestResDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
-import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteSubmitResDto;
 import com.memoryseal.memorysealbackend.domain.invite.service.InviteService;
-import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
-import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,13 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
