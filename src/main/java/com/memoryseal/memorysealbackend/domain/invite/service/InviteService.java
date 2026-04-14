@@ -16,12 +16,12 @@ import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import com.memoryseal.memorysealbackend.global.redis.util.RandomUtil;
 import com.memoryseal.memorysealbackend.global.redis.util.RedisUtil;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -85,10 +85,20 @@ public class InviteService {
             throw new AuthException(ErrorCode.ALREADY_BURIED);
         }
 
-        contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
-                .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_REQUESTED);});
         contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
-                .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_CONTRIBUTOR);});
+                        .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_CONTRIBUTOR);});
+
+        Optional<ContributorRequest> existingRequest = contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId);
+
+        if(existingRequest.isPresent()) {
+            ContributorRequest request = existingRequest.get();
+            if(request.getStatus() == ContributorRequestStatus.REJECTED) {
+                request.setStatus(ContributorRequestStatus.PENDING);
+                contributorRequestJpaRepository.save(request);
+                return InviteSubmitResDto.toDto(request);
+            }
+            throw new AuthException(ErrorCode.ALREADY_REQUESTED);
+        }
 
         final ContributorRequest newRequest = ContributorRequest.builder()
                 .userId(currentUserId)
