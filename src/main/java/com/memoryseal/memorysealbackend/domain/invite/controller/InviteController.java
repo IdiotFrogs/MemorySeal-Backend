@@ -2,6 +2,7 @@ package com.memoryseal.memorysealbackend.domain.invite.controller;
 
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.InviteRequestDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.ProcessRequestDto;
+import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.ContributorRequestResDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteSubmitResDto;
 import com.memoryseal.memorysealbackend.domain.invite.service.InviteService;
@@ -22,12 +23,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -112,6 +111,25 @@ public class InviteController {
             @PathVariable final Long requestId,
             @RequestBody final ProcessRequestDto requestDto) {
         InviteSubmitResDto response = inviteService.processContributorRequest(requestId, requestDto.isApproved());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "공동작업자 요청 목록 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "403", description = "요청을 처리할 권한이 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/requests\"}"))),
+            @ApiResponse(responseCode = "404", description = "1. 타임캡슐을 찾을 수 없음 \t\n 2. 사용자를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = {
+                            @ExampleObject(name = "타임캡슐을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/request/{capsuleId}/requests\"}"),
+                            @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/time-capsules/request/{capsuleId}/requests\"}")
+                    })),
+    })
+    @GetMapping("/time-capsules/request/{capsuleId}/requests")
+    public ResponseEntity<List<ContributorRequestResDto>> getReqeustsDetail(@PathVariable Long capsuleId) {
+        List<ContributorRequestResDto> response = inviteService.getReqeustsDetail(capsuleId);
         return ResponseEntity.ok(response);
     }
 
