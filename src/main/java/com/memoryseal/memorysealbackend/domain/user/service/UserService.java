@@ -1,12 +1,9 @@
 package com.memoryseal.memorysealbackend.domain.user.service;
 
 import com.memoryseal.memorysealbackend.domain.auth.repository.RefreshTokenRepository;
-import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
-import com.memoryseal.memorysealbackend.domain.file.repository.AttachedFileJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserCreateDto;
 import com.memoryseal.memorysealbackend.domain.user.controller.dto.res.UserDetailResponseDto;
 import com.memoryseal.memorysealbackend.domain.user.controller.dto.res.UserResponseDto;
-import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserUpdateDto;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
 import com.memoryseal.memorysealbackend.global.aws.service.S3Service;
@@ -16,10 +13,8 @@ import com.memoryseal.memorysealbackend.global.oauth.apple.AppleAuthClient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.security.SecurityUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
