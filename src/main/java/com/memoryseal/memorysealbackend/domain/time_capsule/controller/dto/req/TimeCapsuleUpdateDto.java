@@ -22,12 +22,15 @@ import java.time.LocalDateTime;
 )
 public class TimeCapsuleUpdateDto {
 
+    @Schema(description = "타임캡슐 제목")
     private String title;
 
+    @Schema(description = "타임캡슐 내짜")
     private String description;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
+    @Schema(description = "타임캡슐 열리는 날짜")
     private LocalDateTime openedAt;
 
 

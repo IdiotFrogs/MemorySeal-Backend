@@ -20,8 +20,13 @@ import java.util.List;
         requiredProperties = {"id", "content", "attachedFiles"}
 )
 public class TimeCapsuleContentResDto {
+    @Schema(description = "타임캡슐 내용 ID")
     private Long id;
+
+    @Schema(description = "타임캡슐 내용 텍스트")
     private String content;
+
+    @Schema(description = "타임캡슐 내용 파일")
     private List<AttachedFileResDto> attachedFiles;
 
     public static TimeCapsuleContentResDto toDto(TimeCapsuleContent timeCapsuleContent) {
