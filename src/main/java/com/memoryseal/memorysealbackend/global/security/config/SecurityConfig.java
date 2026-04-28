@@ -55,9 +55,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("https://d1b9ny7jml3wl9.cloudfront.net");
-        configuration.addAllowedOriginPattern("https://43.201.236.253.sslip.io:8080");
-        configuration.addAllowedOriginPattern("https://43.201.236.253.sslip.io");
+        configuration.addAllowedOriginPattern("https://df7w5xvx73q5e.cloudfront.net");
+        configuration.addAllowedOriginPattern("http://43.201.15.113.sslip.io:8080");
+        configuration.addAllowedOriginPattern("http://43.201.15.113:8080");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
