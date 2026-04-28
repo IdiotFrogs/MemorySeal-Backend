@@ -1,6 +1,5 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleCreateResDto;

@@ -19,32 +19,41 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Schema(
         description = "타임캡슐 상세 정보 응답 DTO",
-        requiredProperties = {"title", "description", "buriedAt", "openedAt", "timeCapsuleActiveStatus"}
+        requiredProperties = {"title", "description", "createdAt", "buriedAt", "openedAt", "mainImaeUrl", "timeCapsuleActiveStatus", "userRole", "buryCheckResDto"}
 )
 public class TimeCapsuleResponseDto {
 
+    @Schema(description = "타임캡슐 제목")
     private String title;
 
+    @Schema(description = "타임캡슐 설명")
     private String description;
 
+    @Schema(description = "타임캡슐 생성 날짜")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
+    @Schema(description = "타임캡슐 묻히는 날짜")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime buriedAt;
 
+    @Schema(description = "타임캡슐 열리는 날짜")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime openedAt;
 
+    @Schema(description = "타임캡슐 대표 이미지 URL")
     private String mainImageUrl;
 
+    @Schema(description = "타임캡슐 상태", examples = {"OPENED", "BURIED", "BEFOREBURIED"})
     private TimeCapsuleStatus timeCapsuleStatus;
 
+    @Schema(description = "조회한 유저의 공동작업자 역할", examples = {"HOST", "CONTRIBUTOR"})
     private ContributorRole userRole;
 
+    @Schema(description = "묻기 현황 확인 DTO")
     private BuryCheckResDto buryCheckResDto;
 
 }
