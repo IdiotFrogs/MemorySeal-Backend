@@ -153,9 +153,13 @@ public class LoginService {
     }
 
 
-    public GeneratedToken execute(String providerId, String provider) {
+    public GeneratedToken execute(String providerId, String provider, String fcmToken) {
         User user = userJpaRepository.findByProviderAndProviderIdAndUserActiveStatus(provider, providerId, true)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+
+        if(fcmToken != null) {
+            user.setFcmToken(fcmToken);
+        }
 
         GeneratedToken generatedToken = jwtUtil.generateToken(user.getEmail(), Role.USER.getKey());
 

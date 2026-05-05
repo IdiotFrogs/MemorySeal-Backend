@@ -97,7 +97,7 @@ public class AuthController {
             @RequestBody GoogleLoginRequest request
             ) {
         String providerId = loginService.verifyGoogleIdToken(request.getIdToken());
-        GeneratedToken response = loginService.execute(providerId, "google");
+        GeneratedToken response = loginService.execute(providerId, "google", request.getFcmToken());
 
         return ResponseEntity.ok(response);
     }
@@ -117,7 +117,7 @@ public class AuthController {
             @RequestBody AppleLoginRequest request
     ) {
         String providerId = loginService.verifyAppleIdToken(request.getIdToken(), request.getAuthorizationCode());
-        GeneratedToken response = loginService.execute(providerId, "apple");
+        GeneratedToken response = loginService.execute(providerId, "apple", request.getFcmToken());
         return ResponseEntity.ok(response);
     }
 

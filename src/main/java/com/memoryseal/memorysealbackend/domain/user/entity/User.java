@@ -46,4 +46,7 @@ public class User {
 
     @Column(name = "is_onboarding", nullable = false)
     private Boolean isOnboarding;
+
+    @Column(name = "fcm_token", nullable = true)
+    private String fcmToken;
 }
