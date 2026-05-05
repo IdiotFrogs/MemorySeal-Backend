@@ -15,5 +15,5 @@ public class TimeCapsuleContentListResDto {
     private ContributorRole myRole;
 
     @Schema(description = "타임캡슐 내용 DTO")
-    private List<TimeCapsuleContentResDto> contents;
+    private List<UserContentDto> contents;
 }
