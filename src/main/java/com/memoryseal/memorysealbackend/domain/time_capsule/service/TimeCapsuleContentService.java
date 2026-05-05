@@ -6,6 +6,7 @@ import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleContentRequest;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentListResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleContent;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.ContentJpaRepository;
@@ -25,6 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -113,13 +116,33 @@ public class TimeCapsuleContentService {
                 .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
 
         List<TimeCapsuleContent> contents = contentJpaRepository.findByTimeCapsuleId(timeCapsuleId);
-        List<TimeCapsuleContentResDto> contentDtos = contents.stream()
-                .map(TimeCapsuleContentResDto::toDto)
+        List<Long> userIds = contents.stream()
+                .map(c -> c.getUser().getId())
+                .distinct()
+                .toList();
+
+        Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        Map<Long, List<TimeCapsuleContent>> groupByUser = contents.stream()
+                .collect(Collectors.groupingBy(c -> c.getUser().getId()));
+
+        List<UserContentDto> userContentDtos = groupByUser.entrySet().stream()
+                .map(entry -> {
+                    User user = userMap.get(entry.getKey());
+                    return UserContentDto.builder()
+                            .userId(entry.getKey())
+                            .nickname(user.getNickname())
+                            .contents(entry.getValue().stream()
+                                    .map(TimeCapsuleContentResDto::toDto)
+                                    .toList())
+                            .build();
+                })
                 .toList();
 
         return TimeCapsuleContentListResDto.builder()
                 .myRole(contributor.getContributorRole())
-                .contents(contentDtos)
+                .contents(userContentDtos)
                 .build();
     }
 
