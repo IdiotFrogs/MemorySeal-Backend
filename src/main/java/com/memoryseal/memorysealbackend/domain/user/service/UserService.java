@@ -168,6 +168,7 @@ public class UserService {
         user.setNickname("탈퇴한 사용자");
         user.setProfileImage(null);
         user.setAppleRefreshToken(null);
+        user.setFcmToken(null);
 
         refreshTokenRepository.deleteById(user.getEmail());
 

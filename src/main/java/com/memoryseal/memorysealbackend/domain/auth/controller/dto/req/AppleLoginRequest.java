@@ -13,4 +13,7 @@ public class AppleLoginRequest {
 
     @Schema(description = "authorizationCode", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String authorizationCode;
+
+    @Schema(description = "fcmToken")
+    private String fcmToken;
 }

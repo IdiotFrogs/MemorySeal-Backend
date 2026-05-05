@@ -36,6 +36,7 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4")
 	implementation("com.google.api-client:google-api-client:2.2.0")
 	implementation("com.nimbusds:nimbus-jose-jwt:9.37.3")
+	implementation("com.google.firebase:firebase-admin:9.2.0")
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("com.mysql:mysql-connector-j")
 	annotationProcessor("org.projectlombok:lombok")

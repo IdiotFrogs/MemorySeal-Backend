@@ -1,0 +1,51 @@
+package com.memoryseal.memorysealbackend.global.FCM;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class FCMService {
+    private final FirebaseMessaging firebaseMessaging;
+
+    private void sendNotification(String fcmToken, String title, String body) {
+        if(fcmToken == null) {
+            return;
+        }
+        try {
+            Message message = Message.builder()
+                    .setToken(fcmToken)
+                    .setNotification(Notification.builder()
+                            .setTitle(title)
+                            .setBody(body)
+                            .build())
+                    .build();
+            firebaseMessaging.send(message);
+            log.info("푸시 알림 전송 성공: {}", fcmToken);
+        }catch (FirebaseMessagingException e) {
+            log.error("푸시 알림 전송 실패: {}", e.getMessage());
+        }
+    }
+
+    public void sendApprovedNotification(String fcmToken, String title) {
+        sendNotification(fcmToken, "타임캡슐 참가 수락", title + "캡슐 참가 요청이 수락됐어요!");
+    }
+
+    public void sendBuriedNotification(String fcmToken, String title) {
+        sendNotification(fcmToken, "타임캡슐 묻기", title + "캡슐이 묻혔어요!");
+    }
+
+    public void sendOpenedNotification(String fcmToken, String title) {
+        sendNotification(fcmToken, "타임캡슐 개봉", title + "캡슐을 확인해보세요!");
+    }
+
+    public void sendJoinRequestNotification(String fcmToken, String title, String nickname) {
+        sendNotification(fcmToken, "타임캡슐 참가 요청", title + "캡슐에 " + nickname + "님이 참가를 요청했어요!");
+    }
+}

@@ -13,6 +13,7 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleSt
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
+import com.memoryseal.memorysealbackend.global.FCM.FCMService;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import com.memoryseal.memorysealbackend.global.redis.util.RandomUtil;
@@ -37,6 +38,7 @@ public class InviteService {
     private final ContributorJpaRepository contributorJpaRepository;
     private final ContributorRequestJpaRepository contributorRequestJpaRepository;
     private final UserJpaRepository userJpaRepository;
+    private final FCMService fcmService;
 
     private static final String INVITE_LINK_PREFIX = "id=%d";
 
@@ -108,6 +110,15 @@ public class InviteService {
                 .timeCapsuleId(capsuleId)
                 .build();
         contributorRequestJpaRepository.save(newRequest);
+
+        Contributor host = contributorJpaRepository
+                .findByTimeCapsuleIdAndContributorRole(capsuleId, ContributorRole.HOST)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
+        User hostUser = userJpaRepository.findById(host.getUserId())
+                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+        User requestUser = userJpaRepository.findById(currentUserId)
+                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+        fcmService.sendJoinRequestNotification(hostUser.getFcmToken(), timeCapsule.getTitle() ,requestUser.getFcmToken());
     }
 
     public void processContributorRequest(final Long requestId, final boolean isApproved) {
@@ -137,6 +148,10 @@ public class InviteService {
             request.setStatus(ContributorRequestStatus.REJECTED);
         }
         contributorRequestJpaRepository.save(request);
+
+        User user = userJpaRepository.findById(request.getUserId())
+                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+        fcmService.sendApprovedNotification(user.getFcmToken(), timeCapsule.getTitle());
     }
 
     public List<ContributorRequestResDto> getReqeustsDetail(Long capsuleId) {

@@ -8,4 +8,7 @@ import lombok.Getter;
 public class GoogleLoginRequest {
     @Schema(description = "idToken")
     private String idToken;
+
+    @Schema(description = "fcmToken")
+    private String fcmToken;
 }
