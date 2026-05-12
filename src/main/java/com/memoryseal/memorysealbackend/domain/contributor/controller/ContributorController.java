@@ -1,9 +1,8 @@
 package com.memoryseal.memorysealbackend.domain.contributor.controller;
 
-import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.req.BuryRequestDto;
+import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.BuryResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.ContributorResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.service.ContributorService;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -71,9 +70,9 @@ public class ContributorController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(name = "이미 묻힌 타임캡슐", value = "{\"status\": \"409\", \"error\": \"ALREADY_BURIED\", \"message\": \"이미 묻힌 타임캡슐입니다.\", \"path\": \"/time-capsules/{capsuleId}/bury/agree\"}")))
     })
-    @PutMapping("/{capsuleId}/bury")
-    @Operation(summary = "타임캡슐 묻기")
-    public ResponseEntity<TimeCapsuleResponseDto> agreeBury(@PathVariable Long capsuleId, @RequestBody BuryRequestDto request) {
-        return ResponseEntity.ok(contributorService.buryCapsule(capsuleId, request.getOpenedAt()));
+    @PutMapping("/{capsuleId}/bury/agree")
+    @Operation(summary = "투표")
+    public ResponseEntity<BuryResponseDto> agreeBury(@PathVariable Long capsuleId, @RequestParam boolean agree) {
+        return ResponseEntity.ok(contributorService.agreeBury(capsuleId, agree));
     }
 }

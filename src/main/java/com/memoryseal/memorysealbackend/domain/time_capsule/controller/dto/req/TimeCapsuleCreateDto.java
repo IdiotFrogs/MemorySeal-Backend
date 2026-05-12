@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Schema(
         description = "타임캡슐 생성 요청 DTO",
-        requiredProperties = {"title", "description"})
+        requiredProperties = {"title", "description", "openedAt"})
 public class TimeCapsuleCreateDto {
 
     @Schema(description = "타임캡슐 제목")
@@ -25,5 +25,10 @@ public class TimeCapsuleCreateDto {
 
     @Schema(description = "타임캡슐 설명")
     private String description;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
+    @Schema(description = "타임캡슐 열리는 날짜")
+    private LocalDateTime openedAt;
 
 }

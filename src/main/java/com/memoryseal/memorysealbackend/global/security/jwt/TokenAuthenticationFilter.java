@@ -61,7 +61,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     public boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getServletPath();
-        return path.startsWith("/auth/login") || path.equals("/auth/reissue");
+        return request.getServletPath().equals("/auth/reissue");
     }
 }

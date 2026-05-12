@@ -36,7 +36,7 @@ public class TimeCapsule {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
-    @Column(name = "opend_at", nullable = true)
+    @Column(name = "opend_at", nullable = false)
     private LocalDateTime openedAt;
 
     @Column(name = "time_capsule_status", nullable = false)
