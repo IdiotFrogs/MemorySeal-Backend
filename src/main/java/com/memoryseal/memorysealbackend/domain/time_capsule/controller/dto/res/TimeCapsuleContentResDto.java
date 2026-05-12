@@ -17,28 +17,33 @@ import java.util.List;
 @Builder
 @Schema(
         description = "생성된 타임캡슐 내용 DTO",
-        requiredProperties = {"id", "content", "attachedFiles"}
+        requiredProperties = {"contentId", "content", "attachedFileUrls"}
 )
 public class TimeCapsuleContentResDto {
     @Schema(description = "타임캡슐 내용 ID")
-    private Long id;
+    private Long contentId;
 
-    @Schema(description = "타임캡슐 내용 텍스트")
+    @Schema(description = "타임캡슐 내용 텍스트", nullable = true)
     private String content;
 
-    @Schema(description = "타임캡슐 내용 파일")
-    private List<AttachedFileResDto> attachedFiles;
+    @Schema(description = "타임캡슐 내용 이미지 URL 목록", nullable = true)
+    private List<String> attachedFileUrls;
 
     public static TimeCapsuleContentResDto toDto(TimeCapsuleContent timeCapsuleContent) {
         if (timeCapsuleContent == null) {
             return null;
         } else {
+            List<String> fileUrls = timeCapsuleContent.getAttachedFiles().isEmpty()
+                    ? null
+                    : timeCapsuleContent.getAttachedFiles()
+                        .stream()
+                        .map(AttachedFile::getFileUrl)
+                        .toList();
+
             return TimeCapsuleContentResDto.builder()
-                    .id(timeCapsuleContent.getId())
+                    .contentId(timeCapsuleContent.getId())
                     .content(timeCapsuleContent.getContent())
-                    .attachedFiles(timeCapsuleContent.getAttachedFiles().stream()
-                            .map(AttachedFileResDto::toDto)
-                            .toList())
+                    .attachedFileUrls(fileUrls)
                     .build();
         }
     }
