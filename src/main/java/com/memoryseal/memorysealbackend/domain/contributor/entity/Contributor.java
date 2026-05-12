@@ -19,9 +19,6 @@ public class Contributor {
     @Column(name = "contributor_role", nullable = false)
     private ContributorRole contributorRole;
 
-    @Column(name = "bury", nullable = true)
-    private Boolean bury;
-
     @Column(name = "user_id", nullable = false)
     private Long userId;
 

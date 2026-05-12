@@ -28,11 +28,6 @@ public class TimeCapsuleUpdateResDto {
     @Schema(description = "타임캡슐 설명")
     private String description;
 
-    @Schema(description = "타임캡슐 열리는 날짜")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
-    private LocalDateTime openedAt;
-
     @Schema(description = "타임캡슐 대표 이미지 URL")
     private String mainImageUrl;
 
@@ -44,7 +39,6 @@ public class TimeCapsuleUpdateResDto {
             return TimeCapsuleUpdateResDto.builder()
                     .title(timeCapsule.getTitle())
                     .description(timeCapsule.getDescription())
-                    .openedAt(timeCapsule.getOpenedAt())
                     .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                     .build();
         }
