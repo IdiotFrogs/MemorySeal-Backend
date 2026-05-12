@@ -1,15 +1,16 @@
 package com.memoryseal.memorysealbackend.domain.contributor.service;
 
-import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.BuryResponseDto;
-import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.ContributorBuryDto;
 import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.ContributorResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
+import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
+import com.memoryseal.memorysealbackend.global.FCM.FCMService;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,6 +32,7 @@ public class ContributorService {
     private final ContributorJpaRepository contributorJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
+    private final FCMService fcmService;
 
     public List<ContributorResponseDto> getDetail(Long capsuleId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -75,7 +78,7 @@ public class ContributorService {
     }
 
     @Transactional
-    public BuryResponseDto agreeBury(Long capsuleId, boolean agree) {
+    public TimeCapsuleResponseDto buryCapsule(Long capsuleId, LocalDateTime openedAt) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null || !authentication.isAuthenticated()) {
             throw new AuthException(ErrorCode.NEED_LOGIN);
@@ -93,37 +96,48 @@ public class ContributorService {
 
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
                 .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
+
         if(timeCapsule.getTimeCapsuleStatus() != TimeCapsuleStatus.BEFOREBURIED) {
             throw new AuthException(ErrorCode.ALREADY_BURIED);
         }
 
         Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
                 .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
-        contributor.setBury(agree);
 
-        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
-        boolean isAllBuried = contributors.stream().allMatch(Contributor::getBury);
-
-        if(isAllBuried) {
-            if(timeCapsule.getOpenedAt().isBefore(LocalDateTime.now())) {
-                throw new AuthException(ErrorCode.INVALID_OPENED_AT);
-            }
-            timeCapsule.setTimeCapsuleStatus(TimeCapsuleStatus.BURIED);
-            timeCapsule.setBuriedAt(LocalDateTime.now());
+        if(contributor.getContributorRole() != ContributorRole.HOST) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        List<ContributorBuryDto> contributorBuryDtos = contributors.stream()
-                .map(c -> ContributorBuryDto.builder()
-                        .contributorRole(c.getContributorRole())
-                        .bury(c.getBury())
-                        .userId(c.getUserId())
-                        .build())
+        if(openedAt.isBefore(LocalDateTime.now())) {
+            throw new AuthException(ErrorCode.INVALID_OPENED_AT);
+        }
+
+        timeCapsule.setOpenedAt(openedAt);
+        timeCapsule.setTimeCapsuleStatus(TimeCapsuleStatus.BURIED);
+        timeCapsule.setBuriedAt(LocalDateTime.now());
+
+        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
+        List<Long> userIds = contributors.stream()
+                .map(Contributor::getUserId)
                 .toList();
 
-        return BuryResponseDto.builder()
-                .timeCapsuleId(capsuleId)
-                .status(timeCapsule.getTimeCapsuleStatus())
-                .contributors(contributorBuryDtos)
+        Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        contributors.forEach(c -> {
+            User user = userMap.get(c.getUserId());
+            fcmService.sendBuriedNotification(user.getFcmToken(), timeCapsule.getTitle());
+        });
+
+
+        return TimeCapsuleResponseDto.builder()
+                .title(timeCapsule.getTitle())
+                .description(timeCapsule.getDescription())
+                .createdAt(timeCapsule.getCreatedAt())
+                .openedAt(timeCapsule.getOpenedAt())
+                .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
+                .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
+                .userRole(contributor.getContributorRole())
                 .build();
     }
 }

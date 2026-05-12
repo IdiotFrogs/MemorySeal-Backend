@@ -53,7 +53,4 @@ public class TimeCapsuleResponseDto {
     @Schema(description = "조회한 유저의 공동작업자 역할", examples = {"HOST", "CONTRIBUTOR"})
     private ContributorRole userRole;
 
-    @Schema(description = "묻기 현황 확인 DTO")
-    private BuryCheckResDto buryCheckResDto;
-
 }

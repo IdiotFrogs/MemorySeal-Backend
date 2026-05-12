@@ -60,15 +60,10 @@ public class TimeCapsuleService {
 
         log.info("타임캡슐 생성 시작 - 유저 ID: {}", currentUserId);
 
-        if(timeCapsuleCreateDto.getOpenedAt().isBefore(LocalDateTime.now())) {
-            throw new AuthException(ErrorCode.INVALID_OPENED_AT);
-        }
-
         try{
             TimeCapsule timeCapsule = TimeCapsule.builder()
                     .title(timeCapsuleCreateDto.getTitle())
                     .description(timeCapsuleCreateDto.getDescription())
-                    .openedAt(timeCapsuleCreateDto.getOpenedAt())
                     .timeCapsuleStatus(TimeCapsuleStatus.BEFOREBURIED)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
@@ -86,7 +81,6 @@ public class TimeCapsuleService {
 
             Contributor hostContributor = Contributor.builder()
                     .contributorRole(ContributorRole.HOST)
-                    .bury(false)
                     .userId(currentUserId)
                     .timeCapsuleId(savedTimeCapsule.getId())
                     .build();
@@ -110,17 +104,6 @@ public class TimeCapsuleService {
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
 
-        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(id);
-        Long memberCount = (long) contributors.size();
-        Long trueCount = contributors.stream()
-                .filter(c -> c.getBury() != null && c.getBury())
-                .count();
-
-        BuryCheckResDto buryCheckResDto = BuryCheckResDto.builder()
-                .memberCount(memberCount)
-                .trueCount(trueCount)
-                .build();
-
         return TimeCapsuleResponseDto.builder()
                 .title(timeCapsule.getTitle())
                 .description(timeCapsule.getDescription())
@@ -130,7 +113,6 @@ public class TimeCapsuleService {
                 .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                 .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
                 .userRole(contributor.getContributorRole())
-                .buryCheckResDto(buryCheckResDto)
                 .build();
     }
 
@@ -186,18 +168,9 @@ public class TimeCapsuleService {
             if(timeCapsuleUpdateDto.getDescription() != null) {
                 timeCapsule.setDescription(timeCapsuleUpdateDto.getDescription());
             }
-            if(timeCapsuleUpdateDto.getOpenedAt() != null) {
-                if(timeCapsuleUpdateDto.getOpenedAt().isBefore(LocalDateTime.now())) {
-                    throw new AuthException(ErrorCode.INVALID_OPENED_AT);
-                }
-                timeCapsule.setOpenedAt(timeCapsuleUpdateDto.getOpenedAt());
-            }
         }
 
         timeCapsule.setUpdatedAt(LocalDateTime.now());
-
-        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
-        contributors.forEach(c -> c.setBury(false));
 
         if(mainImage != null && !mainImage.isEmpty()) {
             log.info("이미지 업로드 시도: {}", mainImage.getOriginalFilename());
