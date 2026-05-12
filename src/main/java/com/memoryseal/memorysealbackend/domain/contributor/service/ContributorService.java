@@ -10,6 +10,7 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleSt
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
+import com.memoryseal.memorysealbackend.global.FCM.FCMService;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,6 +32,7 @@ public class ContributorService {
     private final ContributorJpaRepository contributorJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
+    private final FCMService fcmService;
 
     public List<ContributorResponseDto> getDetail(Long capsuleId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -112,6 +115,19 @@ public class ContributorService {
         timeCapsule.setOpenedAt(openedAt);
         timeCapsule.setTimeCapsuleStatus(TimeCapsuleStatus.BURIED);
         timeCapsule.setBuriedAt(LocalDateTime.now());
+
+        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
+        List<Long> userIds = contributors.stream()
+                .map(Contributor::getUserId)
+                .toList();
+
+        Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        contributors.forEach(c -> {
+            User user = userMap.get(c.getUserId());
+            fcmService.sendBuriedNotification(user.getFcmToken(), timeCapsule.getTitle());
+        });
 
 
         return TimeCapsuleResponseDto.builder()
