@@ -133,7 +133,7 @@ public class TimeCapsuleContentService {
                     return UserContentDto.builder()
                             .userId(entry.getKey())
                             .nickname(user.getNickname())
-                            .contents(entry.getValue().stream()
+                            .capsuleContents(entry.getValue().stream()
                                     .map(TimeCapsuleContentResDto::toDto)
                                     .toList())
                             .build();
@@ -142,7 +142,7 @@ public class TimeCapsuleContentService {
 
         return TimeCapsuleContentListResDto.builder()
                 .myRole(contributor.getContributorRole())
-                .contents(userContentDtos)
+                .userContents(userContentDtos)
                 .build();
     }
 
