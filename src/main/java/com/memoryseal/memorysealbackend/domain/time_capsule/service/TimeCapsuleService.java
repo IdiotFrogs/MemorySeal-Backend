@@ -7,7 +7,9 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.T
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.*;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
+import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleContent;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
+import com.memoryseal.memorysealbackend.domain.time_capsule.repository.ContentJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.global.aws.service.S3Service;
@@ -35,6 +37,7 @@ import static java.util.stream.Collectors.toList;
 public class TimeCapsuleService {
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
     private final ContributorJpaRepository contributorJpaRepository;
+    private final ContentJpaRepository contentJpaRepository;
     private final S3Service s3Service;
 
     private Long getCurrentUserId() {
@@ -104,6 +107,16 @@ public class TimeCapsuleService {
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
 
+        List<TimeCapsuleContent> myContents = contentJpaRepository.findByTimeCapsuleIdAndUserId(id, currentUserId);
+
+        int myContentCount = (int) myContents.stream()
+                .filter(c -> c.getContent() != null && !c.getContent().isBlank())
+                .count();
+
+        int myImageCount = (int) myContents.stream()
+                .flatMap(c -> c.getAttachedFiles().stream())
+                .count();
+
         return TimeCapsuleResponseDto.builder()
                 .title(timeCapsule.getTitle())
                 .description(timeCapsule.getDescription())
@@ -113,6 +126,8 @@ public class TimeCapsuleService {
                 .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                 .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
                 .userRole(contributor.getContributorRole())
+                .myContentCount(myContentCount)
+                .myImageCount(myImageCount)
                 .build();
     }
 

@@ -6,7 +6,9 @@ import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRol
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
+import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleContent;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
+import com.memoryseal.memorysealbackend.domain.time_capsule.repository.ContentJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
@@ -32,6 +34,7 @@ public class ContributorService {
     private final ContributorJpaRepository contributorJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
+    private final ContentJpaRepository contentJpaRepository;
     private final FCMService fcmService;
 
     public List<ContributorResponseDto> getDetail(Long capsuleId) {
@@ -129,6 +132,16 @@ public class ContributorService {
             fcmService.sendBuriedNotification(user.getFcmToken(), timeCapsule.getTitle());
         });
 
+        List<TimeCapsuleContent> myContents = contentJpaRepository.findByTimeCapsuleIdAndUserId(capsuleId, currentUserId);
+
+        int myContentCount = (int) myContents.stream()
+                .filter(c -> c.getContent() != null && !c.getContent().isBlank())
+                .count();
+
+        int myImageCount = (int) myContents.stream()
+                .flatMap(c -> c.getAttachedFiles().stream())
+                .count();
+
 
         return TimeCapsuleResponseDto.builder()
                 .title(timeCapsule.getTitle())
@@ -138,6 +151,8 @@ public class ContributorService {
                 .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                 .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
                 .userRole(contributor.getContributorRole())
+                .myContentCount(myContentCount)
+                .myImageCount(myImageCount)
                 .build();
     }
 }
