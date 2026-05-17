@@ -1,8 +1,8 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller;
 
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleContentRequest;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentListResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.service.TimeCapsuleContentService;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -113,10 +113,10 @@ public class TimeCapsuleContentController {
                     examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/api/time-capsule-content/{timeCapsuleId}/contents\"}")))
     })
     @GetMapping("/{timeCapsuleId}/contents")
-    public ResponseEntity<TimeCapsuleContentListResDto> getContents(
+    public ResponseEntity<List<UserContentDto>> getContents(
             @PathVariable Long timeCapsuleId
     ) {
-        TimeCapsuleContentListResDto dto = timeCapsuleContentService.getMyContent(timeCapsuleId);
+        List<UserContentDto> dto = timeCapsuleContentService.getMyContent(timeCapsuleId);
         return ResponseEntity.ok(dto);
     }
 

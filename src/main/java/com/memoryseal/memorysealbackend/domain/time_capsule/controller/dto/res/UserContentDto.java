@@ -13,6 +13,8 @@ public class UserContentDto {
     private Long userId;
     @Schema(description = "유저 닉네임")
     private String nickname;
+    @Schema(description = "유저 프로필 이미지 URL")
+    private String profileImageUrl;
     @Schema(description = "타임캡슐 내용")
     private List<TimeCapsuleContentResDto> capsuleContents;
 }
