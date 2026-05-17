@@ -23,7 +23,7 @@ public class TimeCapsule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", length = 50, nullable = false)
+    @Column(name = "title", length = 20, nullable = false)
     private String title;
 
     @Column(name = "description", columnDefinition = "TEXT", nullable = true)
@@ -36,7 +36,7 @@ public class TimeCapsule {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
-    @Column(name = "opend_at", nullable = true)
+    @Column(name = "opened_at", nullable = true)
     private LocalDateTime openedAt;
 
     @Column(name = "time_capsule_status", nullable = false)

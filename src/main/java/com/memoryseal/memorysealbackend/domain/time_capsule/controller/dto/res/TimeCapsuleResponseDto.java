@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Schema(
         description = "타임캡슐 상세 정보 응답 DTO",
-        requiredProperties = {"title", "description", "createdAt", "buriedAt", "openedAt", "mainImaeUrl", "timeCapsuleActiveStatus", "userRole", "buryCheckResDto"}
+        requiredProperties = {"title", "description", "createdAt", "buriedAt", "openedAt", "mainImaeUrl", "timeCapsuleActiveStatus", "userRole", "myContentCount", "myImageCount"}
 )
 public class TimeCapsuleResponseDto {
 
@@ -52,5 +52,11 @@ public class TimeCapsuleResponseDto {
 
     @Schema(description = "조회한 유저의 공동작업자 역할", examples = {"HOST", "CONTRIBUTOR"})
     private ContributorRole userRole;
+
+    @Schema(description = "작성한 메세지 개수")
+    private int myContentCount;
+
+    @Schema(description = "작성한 이미지 개수")
+    private int myImageCount;
 
 }

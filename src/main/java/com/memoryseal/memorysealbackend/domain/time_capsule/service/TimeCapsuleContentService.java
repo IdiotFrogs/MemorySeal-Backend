@@ -4,7 +4,6 @@ import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleContentRequest;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentListResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
@@ -110,7 +109,7 @@ public class TimeCapsuleContentService {
         return TimeCapsuleContentResDto.toDto(content);
     }
 
-    public TimeCapsuleContentListResDto getMyContent(Long timeCapsuleId) {
+    public List<UserContentDto> getMyContent(Long timeCapsuleId) {
         Long currentUserId = getCurrentUserId();
         Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, timeCapsuleId)
                 .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
@@ -127,23 +126,19 @@ public class TimeCapsuleContentService {
         Map<Long, List<TimeCapsuleContent>> groupByUser = contents.stream()
                 .collect(Collectors.groupingBy(c -> c.getUser().getId()));
 
-        List<UserContentDto> userContentDtos = groupByUser.entrySet().stream()
+        return groupByUser.entrySet().stream()
                 .map(entry -> {
                     User user = userMap.get(entry.getKey());
                     return UserContentDto.builder()
                             .userId(entry.getKey())
                             .nickname(user.getNickname())
+                            .profileImageUrl(user.getProfileImage().getFileUrl())
                             .capsuleContents(entry.getValue().stream()
                                     .map(TimeCapsuleContentResDto::toDto)
                                     .toList())
                             .build();
                 })
                 .toList();
-
-        return TimeCapsuleContentListResDto.builder()
-                .myRole(contributor.getContributorRole())
-                .userContents(userContentDtos)
-                .build();
     }
 
     @Transactional

@@ -10,5 +10,7 @@ import java.util.List;
 public interface ContentJpaRepository extends JpaRepository<TimeCapsuleContent, Long> {
     List<TimeCapsuleContent> findByTimeCapsuleId(Long timeCapsuleId);
 
+    List<TimeCapsuleContent> findByTimeCapsuleIdAndUserId(Long timeCapsuleId, Long userId);
+
     void deleteByIdAndUserId(Long id, Long userId);
 }
