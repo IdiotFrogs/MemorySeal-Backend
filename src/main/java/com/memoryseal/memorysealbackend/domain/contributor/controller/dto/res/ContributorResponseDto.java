@@ -24,9 +24,6 @@ public class ContributorResponseDto {
     @Schema(description = "유저 닉네임")
     private String nickname;
 
-    @Schema(description = "공동작업자 묻기 여부")
-    private Boolean bury;
-
     @Schema(description = "유저 ID")
     private Long userId;
 
