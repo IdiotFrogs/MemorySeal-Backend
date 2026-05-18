@@ -71,6 +71,11 @@ public class InviteService {
             throw new AuthException(ErrorCode.ALREADY_BURIED);
         }
 
+        final Optional<String> existingCode = redisUtil.getData(INVITE_LINK_PREFIX.formatted(capsuleId),String.class);
+        if(existingCode.isPresent()) {
+            return new InviteResponseDto(existingCode.get());
+        }
+
         final String randomCode = RandomUtil.generateRandomCode('0', 'z', 10);
         redisUtil.setDataExpire(INVITE_LINK_PREFIX.formatted(capsuleId),randomCode,RedisUtil.toTomorrow());
         // 역방향키 추가
