@@ -37,7 +37,7 @@ public class ContributorService {
     private final ContentJpaRepository contentJpaRepository;
     private final FCMService fcmService;
 
-    public List<ContributorResponseDto> getDetail(Long capsuleId) {
+    private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null || !authentication.isAuthenticated()) {
             throw new AuthException(ErrorCode.NEED_LOGIN);
@@ -52,6 +52,11 @@ public class ContributorService {
             log.error("예상치 못한 Principal 타입: {}", principal.getClass().getName());
             throw new AuthException(ErrorCode.NEED_LOGIN);
         }
+        return currentUserId;
+    }
+
+    public List<ContributorResponseDto> getDetail(Long capsuleId) {
+        Long currentUserId = getCurrentUserId();
         if(!timeCapsuleJpaRepository.existsById(capsuleId)) {
             throw new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND);
         }
@@ -82,20 +87,7 @@ public class ContributorService {
 
     @Transactional
     public TimeCapsuleResponseDto buryCapsule(Long capsuleId, LocalDateTime openedAt) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
-        Object principal = authentication.getPrincipal();
-        Long currentUserId;
-        if(principal instanceof User) {
-            currentUserId = ((User) principal).getId();
-        }else if(principal instanceof String) {
-            currentUserId = Long.valueOf((String) principal);
-        }else {
-            log.error("예상치 못한 Principal 타입: {}", principal.getClass().getName());
-            throw new AuthException(ErrorCode.NEED_LOGIN);
-        }
+        Long currentUserId = getCurrentUserId();
 
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
                 .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
@@ -154,5 +146,27 @@ public class ContributorService {
                 .myContentCount(myContentCount)
                 .myImageCount(myImageCount)
                 .build();
+    }
+
+    @Transactional
+    public void kickContributor(Long capsuleId, Long targetUserId) {
+        Long currentUserId = getCurrentUserId();
+
+        Contributor contributor = contributorJpaRepository
+                .findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
+
+        if(contributor.getContributorRole() != ContributorRole.HOST) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
+
+        Contributor targetContributor = contributorJpaRepository
+                .findByUserIdAndTimeCapsuleId(targetUserId, capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
+        if(targetContributor.getContributorRole() == ContributorRole.HOST) {
+            throw new AuthException(ErrorCode.CANNOT_KICK_HOST);
+        }
+
+        contributorJpaRepository.delete(targetContributor);
     }
 }
