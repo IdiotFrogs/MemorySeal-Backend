@@ -54,7 +54,7 @@ public class ContributorController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "400", description = "openedAt이 현재보다 과거임",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(name = "openedAt이 현재보다 과거임", value = "{\"status\": \"400\", \"error\": \"INVALID_OPENED_AT\", \"message\": \"openedAt이 현재보다 과거입니다\", \"path\": \"/time-capsules/{capsuleId}/bury/agree\"}"))),
+                    examples = @ExampleObject(name = "openedAt이 현재보다 과거임", value = "{\"status\": \"400\", \"error\": \"INVALID_OPENED_AT\", \"message\": \"openedAt이 현재보다 과거입니다.\", \"path\": \"/time-capsules/{capsuleId}/bury/agree\"}"))),
             @ApiResponse(responseCode = "401", description = "로그인 필요",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(name = "로그인 필요", value = "{\"status\": \"401\", \"error\": \"NEED_LOGIN\", \"message\": \"로그인이 필요합니다.\", \"path\": \"/time-capsules/{capsuleId}/bury/agree\"}"))),
@@ -75,5 +75,41 @@ public class ContributorController {
     @Operation(summary = "타임캡슐 묻기")
     public ResponseEntity<TimeCapsuleResponseDto> agreeBury(@PathVariable Long capsuleId, @RequestBody BuryRequestDto request) {
         return ResponseEntity.ok(contributorService.buryCapsule(capsuleId, request.getOpenedAt()));
+    }
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "호스트는 추방할 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "호스트는 추방할 수 없음", value = "{\"status\": \"400\", \"error\": \"CANNOT_KICK_HOST\", \"message\": \"호스트는 추방할 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/contributors/{targetUserId}\"}"))),
+            @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/contributors/{targetUserId}\"}"))),
+    })
+    @DeleteMapping("/{capsuleId}/contributors/{targetUserId}")
+    @Operation(summary = "공동작업자 추방")
+    public ResponseEntity<Void> kickContributor(
+            @PathVariable Long capsuleId,
+            @PathVariable Long targetUserId) {
+        contributorService.kickContributor(capsuleId, targetUserId);
+        return ResponseEntity.ok().build();
+    }
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "호스트는 타임캡슐을 나갈 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "호스트는 타임캡슐을 나갈 수 없음", value = "{\"status\": \"400\", \"error\": \"HOST_CANNOT_LEAVE\", \"message\": \"호스트는 타임캡슐을 나갈 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/leave\"}"))),
+            @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/leave\"}"))),
+    })
+    @DeleteMapping("/{capsuleId}/leave")
+    @Operation(summary = "타임캡슐 나가기")
+    public ResponseEntity<Void> leaveTimeCapsule(
+            @PathVariable Long capsuleId
+    ) {
+        contributorService.leaveTimeCapsule(capsuleId);
+        return ResponseEntity.ok().build();
     }
 }

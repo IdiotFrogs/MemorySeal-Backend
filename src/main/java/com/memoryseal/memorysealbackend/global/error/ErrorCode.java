@@ -17,6 +17,8 @@ public enum ErrorCode {
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "업로드할 파일이 없습니다."),
     NOT_SUPPORT_LOGIN(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 방식입니다."),
     INVALID_OPENED_AT(HttpStatus.BAD_REQUEST, "openedAt이 현재보다 과거입니다."),
+    CANNOT_KICK_HOST(HttpStatus.BAD_REQUEST, "호스트는 추방할 수 없습니다."),
+    HOST_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "호스트는 타임캡슐을 나갈 수 없습니다."),
 
     // 401 UnAuthorized
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
@@ -35,12 +37,10 @@ public enum ErrorCode {
     CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "타임캡슐 내용을 찾을 수 없습니다."),
 
     // 409 CONFLICT(중복된 상태)
-    ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 공동작업자 요청을 보냈습니다."),
     ALREADY_CONTRIBUTOR(HttpStatus.CONFLICT, "이미 공동작업자로 등록이 완료된 사용자입니다."),
     ALREADY_ONBOARDED(HttpStatus.CONFLICT, "이미 온보딩이 완료된 유저입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     ALREADY_BURIED(HttpStatus.CONFLICT, "이미 묻힌 타임캡슐입니다."),
-    ALREADY_PROCESSED(HttpStatus.CONFLICT, "이미 처리된 요청입니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
