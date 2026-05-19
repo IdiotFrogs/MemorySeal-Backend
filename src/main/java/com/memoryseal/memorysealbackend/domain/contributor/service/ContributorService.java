@@ -169,4 +169,18 @@ public class ContributorService {
 
         contributorJpaRepository.delete(targetContributor);
     }
+
+    @Transactional
+    public void leaveTimeCapsule(Long capsuleId) {
+        Long currentUserId = getCurrentUserId();
+        Contributor contributor = contributorJpaRepository
+                .findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
+
+        if(contributor.getContributorRole() == ContributorRole.HOST) {
+            throw new AuthException(ErrorCode.HOST_CANNOT_LEAVE);
+        }
+
+        contributorJpaRepository.delete(contributor);
+    }
 }
