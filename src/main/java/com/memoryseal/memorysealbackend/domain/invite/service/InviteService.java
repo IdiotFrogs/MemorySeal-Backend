@@ -1,12 +1,8 @@
 package com.memoryseal.memorysealbackend.domain.invite.service;
 
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
-import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRequest;
-import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRequestStatus;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
-import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorRequestJpaRepository;
-import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.ContributorRequestResDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
@@ -26,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,7 +34,6 @@ public class InviteService {
     private final RedisUtil redisUtil;
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
     private final ContributorJpaRepository contributorJpaRepository;
-    private final ContributorRequestJpaRepository contributorRequestJpaRepository;
     private final UserJpaRepository userJpaRepository;
     private final FCMService fcmService;
 
@@ -83,6 +80,7 @@ public class InviteService {
         return new InviteResponseDto(randomCode);
     }
 
+    @Transactional
     public void submitContributorRequest(final String inviteCode) {
         Long currentUserId = getCurrentUserId();
 
@@ -98,89 +96,26 @@ public class InviteService {
         contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
                         .ifPresent(req -> {throw new AuthException(ErrorCode.ALREADY_CONTRIBUTOR);});
 
-        Optional<ContributorRequest> existingRequest = contributorRequestJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, capsuleId);
-
-        if(existingRequest.isPresent()) {
-            ContributorRequest request = existingRequest.get();
-            if(request.getStatus() == ContributorRequestStatus.REJECTED) {
-                request.setStatus(ContributorRequestStatus.PENDING);
-                contributorRequestJpaRepository.save(request);
-                return ;
-            }
-            throw new AuthException(ErrorCode.ALREADY_REQUESTED);
-        }
-
-        final ContributorRequest newRequest = ContributorRequest.builder()
+        Contributor newContributor = Contributor.builder()
                 .userId(currentUserId)
                 .timeCapsuleId(capsuleId)
+                .contributorRole(ContributorRole.CONTRIBUTOR)
                 .build();
-        contributorRequestJpaRepository.save(newRequest);
+        contributorJpaRepository.save(newContributor);
 
-        Contributor host = contributorJpaRepository
-                .findByTimeCapsuleIdAndContributorRole(capsuleId, ContributorRole.HOST)
-                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
-        User hostUser = userJpaRepository.findById(host.getUserId())
+        User joinUser = userJpaRepository.findById(currentUserId)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-        User requestUser = userJpaRepository.findById(currentUserId)
-                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-        fcmService.sendJoinRequestNotification(hostUser.getFcmToken(), timeCapsule.getTitle() ,requestUser.getFcmToken());
-    }
 
-    public void processContributorRequest(final Long requestId, final boolean isApproved) {
-        Long currentUserId = getCurrentUserId();
-        ContributorRequest request = contributorRequestJpaRepository.findById(requestId)
-                .orElseThrow(() -> new AuthException(ErrorCode.REQUEST_NOT_FOUND));
-
-        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(request.getTimeCapsuleId())
-                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
-
-        if(!timeCapsule.getUserId().equals(currentUserId)) {
-            throw new AuthException(ErrorCode.ACCESS_DENIED);
-        }
-        if(request.getStatus() != ContributorRequestStatus.PENDING) {
-            throw new AuthException(ErrorCode.ALREADY_PROCESSED);
-        }
-
-        if(isApproved) {
-            final Contributor newContributor = Contributor.builder()
-                    .userId(request.getUserId())
-                    .timeCapsuleId(request.getTimeCapsuleId())
-                    .contributorRole(ContributorRole.CONTRIBUTOR)
-                    .build();
-            contributorJpaRepository.save(newContributor);
-            request.setStatus(ContributorRequestStatus.APPROVED);
-        }else {
-            request.setStatus(ContributorRequestStatus.REJECTED);
-        }
-        contributorRequestJpaRepository.save(request);
-
-        User user = userJpaRepository.findById(request.getUserId())
-                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-        fcmService.sendApprovedNotification(user.getFcmToken(), timeCapsule.getTitle());
-    }
-
-    public List<ContributorRequestResDto> getReqeustsDetail(Long capsuleId) {
-        Long currentUserId = getCurrentUserId();
-
-        timeCapsuleJpaRepository.findById(capsuleId)
-                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
-
-        Contributor contributor = contributorJpaRepository
-                .findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
-                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
-
-        if(contributor.getContributorRole() != ContributorRole.HOST) {
-            throw new AuthException(ErrorCode.ACCESS_DENIED);
-        }
-
-        List<ContributorRequest> requests = contributorRequestJpaRepository.findByTimeCapsuleId(capsuleId);
-
-        return requests.stream()
-                .map(r -> {
-                    User user = userJpaRepository.findById(r.getUserId())
-                            .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-                    return ContributorRequestResDto.toDto(r, user);
-                })
+        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
+        List<Long> userIds = contributors.stream()
+                .map(Contributor::getUserId)
+                .filter(id -> !id.equals(currentUserId))
                 .toList();
+
+        Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                        .collect(Collectors.toMap(User::getId, u-> u));
+
+        userMap.values().forEach(user ->
+                fcmService.sendJoinRequestNotification(user.getFcmToken(), timeCapsule.getTitle(), joinUser.getNickname()));
     }
 }

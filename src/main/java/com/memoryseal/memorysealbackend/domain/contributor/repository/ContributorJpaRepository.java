@@ -1,7 +1,6 @@
 package com.memoryseal.memorysealbackend.domain.contributor.repository;
 
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
-import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRequest;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

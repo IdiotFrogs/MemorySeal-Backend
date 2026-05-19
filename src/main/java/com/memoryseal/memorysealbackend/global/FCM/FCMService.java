@@ -33,9 +33,6 @@ public class FCMService {
         }
     }
 
-    public void sendApprovedNotification(String fcmToken, String title) {
-        sendNotification(fcmToken, "타임 티켓 참가 수락", title + "티켓 참가 요청이 수락됐어요!");
-    }
 
     public void sendBuriedNotification(String fcmToken, String title) {
         sendNotification(fcmToken, "타임 티켓 묻기", title + "티켓이 봉인됐어요!");
@@ -46,6 +43,6 @@ public class FCMService {
     }
 
     public void sendJoinRequestNotification(String fcmToken, String title, String nickname) {
-        sendNotification(fcmToken, "타임 티켓 참가 요청", title + "티켓에 " + nickname + "님이 참가를 요청했어요!");
+        sendNotification(fcmToken, "타임 티켓 참가", title + "티켓에 " + nickname + "님이 참가했어요!");
     }
 }
