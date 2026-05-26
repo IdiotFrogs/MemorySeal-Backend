@@ -142,16 +142,27 @@ public class TimeCapsuleContentService {
     }
 
     @Transactional
-    public void deleteContent(Long contentId) {
+    public void deleteContent(List<Long> contentIds) {
         Long currentUserId = getCurrentUserId();
 
-        TimeCapsuleContent content = contentJpaRepository.findById(contentId)
-                .orElseThrow(() -> new AuthException(ErrorCode.CONTENT_NOT_FOUND));
+        List<TimeCapsuleContent> contents = contentJpaRepository.findAllById(contentIds);
 
-        if(!content.getUser().getId().equals(currentUserId)) {
+        if(contents.size() != contentIds.size()) {
+            throw new AuthException(ErrorCode.CONTENT_NOT_FOUND);
+        }
+
+        // anyMatch는 하나라도 조건에 맞으면 true
+        boolean hasUnauthorized = contents.stream()
+                .anyMatch(c -> !c.getUser().getId().equals(currentUserId));
+
+        if(hasUnauthorized) {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        contentJpaRepository.delete(content);
+        List<Long> ids = contents.stream()
+                        .map(TimeCapsuleContent::getId)
+                        .toList();
+
+        contentJpaRepository.deleteAllByIdInBatch(ids);
     }
 }
