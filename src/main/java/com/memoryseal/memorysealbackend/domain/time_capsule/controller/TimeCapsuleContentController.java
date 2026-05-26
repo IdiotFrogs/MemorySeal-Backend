@@ -1,6 +1,5 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller;
 
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleContentRequest;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.service.TimeCapsuleContentService;
@@ -30,7 +29,7 @@ import java.util.List;
 public class TimeCapsuleContentController {
     private final TimeCapsuleContentService timeCapsuleContentService;
 
-    @PostMapping(value = "/{timeCapsuleId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE,}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{timeCapsuleId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "타임캡슐 내용 생성", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(required = false))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "성공"),
@@ -58,12 +57,12 @@ public class TimeCapsuleContentController {
             )
             @PathVariable Long timeCapsuleId,
             @Parameter(
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE),
+                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE),
                     description = "텍스트 데이터 파트",
                     required = false,
-                    schema = @Schema(implementation = TimeCapsuleContentRequest.class)
+                    schema = @Schema(type = "string")
             )
-            @RequestPart(value = "request", required = false) TimeCapsuleContentRequest request,
+            @RequestParam(value = "content", required = false) String content,
             @Parameter(
                     content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE),
                     description = "파일 리스트 파트",
@@ -73,15 +72,9 @@ public class TimeCapsuleContentController {
                     )
             )
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        try {
-            TimeCapsuleContentResDto newContent = timeCapsuleContentService.createContent(timeCapsuleId, request, files);
-            return new ResponseEntity<>(newContent, HttpStatus.CREATED);
-        }catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+
+        TimeCapsuleContentResDto newContent = timeCapsuleContentService.createContent(timeCapsuleId, content, files);
+        return new ResponseEntity<>(newContent, HttpStatus.CREATED);
     }
 
     @Operation(summary = "타임캡슐 내용 수정")

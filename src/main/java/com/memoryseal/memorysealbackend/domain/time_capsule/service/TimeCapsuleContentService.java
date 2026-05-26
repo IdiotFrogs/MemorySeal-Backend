@@ -3,7 +3,6 @@ package com.memoryseal.memorysealbackend.domain.time_capsule.service;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleContentRequest;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
@@ -59,7 +58,7 @@ public class TimeCapsuleContentService {
 
 
     @Transactional
-    public TimeCapsuleContentResDto createContent(Long timeCapsuleId, TimeCapsuleContentRequest request, List<MultipartFile> files) {
+    public TimeCapsuleContentResDto createContent(Long timeCapsuleId, String content, List<MultipartFile> files) {
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(timeCapsuleId)
                 .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
         Long currentUserId = getCurrentUserId();
@@ -71,20 +70,20 @@ public class TimeCapsuleContentService {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        boolean hasContent = (request != null) && (request.getContent() != null) && (!request.getContent().trim().isEmpty());
+        boolean hasContent = (content != null) &&  (content.trim().isEmpty());
         boolean hasFiles = files != null && !files.isEmpty();
 
         if(!hasContent && !hasFiles) {
             throw new AuthException(ErrorCode.EMPTY_CONTENT);
         }
 
-        TimeCapsuleContent content = TimeCapsuleContent.builder()
-                .content(hasContent ? request.getContent() : null)
+        TimeCapsuleContent timeCapsuleContent = TimeCapsuleContent.builder()
+                .content(hasContent ? content : null)
                 .timeCapsule(timeCapsule)
                 .user(user)
                 .build();
 
-        if(files != null && !files.isEmpty()) {
+        if(hasFiles) {
             List<AttachedFile> attachedFiles = files.parallelStream()
                     .map(file -> {
                         try {
@@ -94,10 +93,10 @@ public class TimeCapsuleContentService {
                         }
                     })
                     .toList();
-            attachedFiles.forEach(content::addAttachedFile);
+            attachedFiles.forEach(timeCapsuleContent::addAttachedFile);
         }
-        contentJpaRepository.save(content);
-        return TimeCapsuleContentResDto.toDto(content);
+        contentJpaRepository.save(timeCapsuleContent);
+        return TimeCapsuleContentResDto.toDto(timeCapsuleContent);
     }
 
     public TimeCapsuleContentResDto updateContent(Long contentId, String newContent) {
