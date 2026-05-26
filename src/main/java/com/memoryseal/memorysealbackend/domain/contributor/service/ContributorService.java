@@ -207,4 +207,30 @@ public class ContributorService {
 
         contributorJpaRepository.delete(contributor);
     }
+
+    @Transactional
+    public void delegationHost(Long capsuleId, Long targetUserId) {
+        Long currentUserId = getCurrentUserId();
+        if(currentUserId.equals(targetUserId)) {
+            throw new AuthException(ErrorCode.CANNOT_DELEGATE_TO_SELF);
+        }
+
+        Contributor host = contributorJpaRepository
+                .findByUserIdAndTimeCapsuleId(currentUserId, capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
+
+        if(host.getContributorRole() != ContributorRole.HOST) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
+
+        Contributor targetContributor = contributorJpaRepository
+                .findByUserIdAndTimeCapsuleId(targetUserId, capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.NOT_A_CONTRIBUTOR));
+
+        host.setContributorRole(ContributorRole.CONTRIBUTOR);
+        targetContributor.setContributorRole(ContributorRole.HOST);
+
+        contributorJpaRepository.save(host);
+        contributorJpaRepository.save(targetContributor);
+    }
 }

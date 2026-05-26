@@ -112,4 +112,26 @@ public class ContributorController {
         contributorService.leaveTimeCapsule(capsuleId);
         return ResponseEntity.ok().build();
     }
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "자기 자신에게 위임 불가",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "자기 자신에게 위임 불가", value = "{\"status\": \"400\", \"error\": \"CANNOT_DELEGATE_TO_SELF\", \"message\": \"자기 자신에게 호스트를 위임할 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/leave\"}"))),
+            @ApiResponse(responseCode = "403", description = "1. 접근 권한 없음 \t\n 2. 공동작업자 아님",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = {
+                            @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다\", \"path\": \"/time-capsules/{capsuleId}/leave\"}"),
+                            @ExampleObject(name = "공동작업자 아님", value = "{\"status\": \"403\", \"error\": \"NOT_A_CONTRIBUTOR\", \"message\": \"해당 타임캡슐의 공동작업자가 아닙니다.\", \"path\": \"/time-capsules/{capsuleId}/leave\"}")
+                    }))
+    })
+    @PutMapping("/{capsuleId}/delegation/{targetUserId}")
+    @Operation(summary = "호스트 위임")
+    public ResponseEntity<Void> delegationHost(
+            @PathVariable Long capsuleId,
+            @PathVariable Long targetUserId
+    ) {
+        contributorService.delegationHost(capsuleId, targetUserId);
+        return ResponseEntity.ok().build();
+    }
 }
