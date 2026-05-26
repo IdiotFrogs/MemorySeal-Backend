@@ -133,9 +133,9 @@ public class TimeCapsuleContentController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(name = "타임캡슐 내용을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"CONTENT_NOT_FOUND\", \"message\": \"타임캡슐을 내용을 찾을 수 없습니다.\", \"path\": \"/api/time-capsule-content/{contentId}\"}")))
     })
-    @DeleteMapping("/{contentId}")
-    public ResponseEntity<Void> deleteContent(@PathVariable Long contentId) {
-        timeCapsuleContentService.deleteContent(contentId);
+    @DeleteMapping
+    public ResponseEntity<Void> deleteContent(@RequestParam List<Long> contentIds) {
+        timeCapsuleContentService.deleteContent(contentIds);
         return ResponseEntity.ok().build();
     }
 }
