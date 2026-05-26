@@ -3,6 +3,7 @@ package com.memoryseal.memorysealbackend.domain.time_capsule.service;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
+import com.memoryseal.memorysealbackend.domain.file.repository.AttachedFileJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
@@ -36,6 +37,7 @@ public class TimeCapsuleContentService {
     private final UserJpaRepository userJpaRepository;
     private final S3Service s3Service;
     private final ContributorJpaRepository contributorJpaRepository;
+    private final AttachedFileJpaRepository attachedFileJpaRepository;
 
 
     private Long getCurrentUserId() {
@@ -161,6 +163,15 @@ public class TimeCapsuleContentService {
         List<Long> ids = contents.stream()
                         .map(TimeCapsuleContent::getId)
                         .toList();
+
+        List<AttachedFile> files = attachedFileJpaRepository.findByTimeCapsuleContentIdIn(ids);
+
+        if(!files.isEmpty()) {
+            files.parallelStream()
+                    .forEach(file -> s3Service.deleteFileFromS3(file.getFileUrl()));
+            List<Long> fileIds = files.stream().map(AttachedFile::getId).toList();
+            attachedFileJpaRepository.deleteAllByIdInBatch(fileIds);
+        }
 
         contentJpaRepository.deleteAllByIdInBatch(ids);
     }
