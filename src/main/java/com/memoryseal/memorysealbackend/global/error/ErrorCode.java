@@ -19,6 +19,7 @@ public enum ErrorCode {
     INVALID_OPENED_AT(HttpStatus.BAD_REQUEST, "openedAt이 현재보다 과거입니다."),
     CANNOT_KICK_HOST(HttpStatus.BAD_REQUEST, "호스트는 추방할 수 없습니다."),
     HOST_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "호스트는 타임캡슐을 나갈 수 없습니다."),
+    CANNOT_DELEGATE_TO_SELF(HttpStatus.BAD_REQUEST, "자기 자신에게 호스트를 위임할 수 없습니다."),
 
     // 401 UnAuthorized
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
@@ -28,6 +29,7 @@ public enum ErrorCode {
 
     // 403 FORBIDDEN
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 요청을 처리할 권한이 없습니다."),
+    NOT_A_CONTRIBUTOR(HttpStatus.FORBIDDEN, "해당 타임캡슐의 공동작업자가 아닙니다."),
 
     // 404 NOT FOUND
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 입니다."),
