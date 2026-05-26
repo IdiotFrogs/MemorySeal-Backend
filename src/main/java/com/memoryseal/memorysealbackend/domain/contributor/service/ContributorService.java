@@ -4,6 +4,8 @@ import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.Co
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
+import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
+import com.memoryseal.memorysealbackend.domain.file.repository.AttachedFileJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleContent;
@@ -13,6 +15,7 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsu
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
 import com.memoryseal.memorysealbackend.global.FCM.FCMService;
+import com.memoryseal.memorysealbackend.global.aws.service.S3Service;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,8 @@ public class ContributorService {
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
     private final ContentJpaRepository contentJpaRepository;
     private final FCMService fcmService;
+    private final AttachedFileJpaRepository attachedFileJpaRepository;
+    private final S3Service s3Service;
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -179,6 +184,25 @@ public class ContributorService {
 
         if(contributor.getContributorRole() == ContributorRole.HOST) {
             throw new AuthException(ErrorCode.HOST_CANNOT_LEAVE);
+        }
+
+        List<TimeCapsuleContent> myContents = contentJpaRepository.findByTimeCapsuleIdAndUserId(capsuleId, currentUserId);
+
+        if(!myContents.isEmpty()) {
+            List<Long> contentIds = myContents.stream()
+                    .map(TimeCapsuleContent::getId)
+                    .toList();
+
+            List<AttachedFile> files = attachedFileJpaRepository.findByTimeCapsuleContentIdIn(contentIds);
+            if(!files.isEmpty()) {
+                files.parallelStream()
+                        .forEach(file -> s3Service.deleteFileFromS3(file.getFileUrl()));
+                List<Long> fileIds = files.stream()
+                        .map(AttachedFile::getId)
+                        .toList();
+                attachedFileJpaRepository.deleteAllByIdInBatch(fileIds);
+            }
+            contentJpaRepository.deleteAllByIdInBatch(contentIds);
         }
 
         contributorJpaRepository.delete(contributor);
