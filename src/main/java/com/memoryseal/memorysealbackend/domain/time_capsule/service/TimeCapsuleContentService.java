@@ -70,7 +70,7 @@ public class TimeCapsuleContentService {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        boolean hasContent = (content != null) &&  (content.trim().isEmpty());
+        boolean hasContent = (content != null) && (!content.trim().isEmpty());
         boolean hasFiles = files != null && !files.isEmpty();
 
         if(!hasContent && !hasFiles) {
