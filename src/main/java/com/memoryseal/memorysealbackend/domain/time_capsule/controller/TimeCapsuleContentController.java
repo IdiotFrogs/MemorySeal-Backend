@@ -62,7 +62,7 @@ public class TimeCapsuleContentController {
                     required = false,
                     schema = @Schema(type = "string")
             )
-            @RequestParam(value = "content", required = false) String content,
+            @RequestPart(value = "content", required = false) String content,
             @Parameter(
                     content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE),
                     description = "파일 리스트 파트",
