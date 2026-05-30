@@ -155,6 +155,7 @@ public class TimeCapsuleService {
                             .timeCapsuleId(timeCapsule.getId())
                             .title(timeCapsule.getTitle())
                             .openedAt(timeCapsule.getOpenedAt())
+                            .createdAt(timeCapsule.getCreatedAt())
                             .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                             .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
                             .role(contributor.getContributorRole())
