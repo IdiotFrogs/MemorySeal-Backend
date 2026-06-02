@@ -121,15 +121,14 @@ public class ContributorService {
         List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
         List<Long> userIds = contributors.stream()
                 .map(Contributor::getUserId)
+                .filter(id -> !id.equals(currentUserId))
                 .toList();
 
         Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
 
-        contributors.forEach(c -> {
-            User user = userMap.get(c.getUserId());
-            fcmService.sendBuriedNotification(user.getFcmToken(), timeCapsule.getTitle());
-        });
+        userMap.values().forEach(user ->
+                fcmService.sendBuriedNotification(user.getFcmToken(), timeCapsule.getTitle()));
 
         List<TimeCapsuleContent> myContents = contentJpaRepository.findByTimeCapsuleIdAndUserId(capsuleId, currentUserId);
 
