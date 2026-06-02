@@ -4,6 +4,7 @@ import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,6 +16,6 @@ public interface UserJpaRepository extends JpaRepository<User,Long> {
     Boolean existsByProviderAndProviderIdAndUserActiveStatus(String provider, String providerId, Boolean userActiveStatus);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
-
     boolean existsByNicknameAndIdNot(String nickname, Long id);
+    List<User> findByNicknameContaining(String nickname);
 }

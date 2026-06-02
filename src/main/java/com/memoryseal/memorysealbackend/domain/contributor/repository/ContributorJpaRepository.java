@@ -25,4 +25,6 @@ public interface ContributorJpaRepository extends JpaRepository<Contributor, Lon
     void deleteByTimeCapsuleId(Long timeCapsuleId);
 
     Page<Contributor> findByTimeCapsuleId(Long timeCapsuleId, Pageable pageable);
+
+    Page<Contributor> findByTimeCapsuleIdAndUserIdIn(Long timeCapsuleId, List<Long> userIds, Pageable pageable);
 }

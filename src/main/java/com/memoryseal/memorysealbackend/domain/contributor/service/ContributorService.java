@@ -1,6 +1,7 @@
 package com.memoryseal.memorysealbackend.domain.contributor.service;
 
 import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.ContributorResponseDto;
+import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.PageResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
@@ -233,5 +234,51 @@ public class ContributorService {
 
         contributorJpaRepository.save(host);
         contributorJpaRepository.save(targetContributor);
+    }
+
+    public Page<ContributorResponseDto> searchByNickname(Long capsuleId, String nickname, Pageable pageable) {
+        Long currentUserId = getCurrentUserId();
+
+        if(!timeCapsuleJpaRepository.existsById(capsuleId)) {
+            throw new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND);
+        }
+
+        if(!contributorJpaRepository.existsByTimeCapsuleIdAndUserId(capsuleId, currentUserId)) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if(nickname == null || nickname.isBlank()) {
+            return getDetail(capsuleId, pageable);
+        }
+
+        List<Long> userIds = userJpaRepository.findByNicknameContaining(nickname).stream()
+                .map(User::getId)
+                .toList();
+
+        if(userIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        Page<Contributor> contributors = contributorJpaRepository
+                .findByTimeCapsuleIdAndUserIdIn(capsuleId, userIds, pageable);
+
+        Map<Long, User> userMap = userJpaRepository.findAllById(
+                contributors.getContent().stream()
+                        .map(Contributor::getUserId)
+                        .toList()
+                ).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        return contributors.map(contributor -> {
+            User user = userMap.get(contributor.getUserId());
+            return ContributorResponseDto.builder()
+                    .contributorRole(contributor.getContributorRole())
+                    .nickname(user.getNickname())
+                    .userId(user.getId())
+                    .profileImageUrl(user.getProfileImage() != null ? user.getProfileImage().getFileUrl() : null)
+                    .userActiveStatus(user.getUserActiveStatus())
+                    .isMe(user.getId().equals(currentUserId))
+                    .build();
+        });
     }
 }

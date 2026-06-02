@@ -15,13 +15,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -140,5 +137,26 @@ public class ContributorController {
     ) {
         contributorService.delegationHost(capsuleId, targetUserId);
         return ResponseEntity.ok().build();
+    }
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다\", \"path\": \"/time-capsules/{capsuleId}/collaborators/search\"}"))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/time-capsules/{capsuleId}/collaborators/search\"}")))
+    })
+    @GetMapping("/{capsuleId}/collaborators/search")
+    @Operation(summary = "공동 작업자 닉네임 검색")
+    public ResponseEntity<PageResponseDto<ContributorResponseDto>> searchByNickname(
+            @PathVariable Long capsuleId,
+            @RequestParam(required = false) String nickname,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(new PageResponseDto<>(contributorService.searchByNickname(capsuleId, nickname, pageable)));
     }
 }
