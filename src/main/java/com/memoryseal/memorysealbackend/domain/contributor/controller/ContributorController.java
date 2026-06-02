@@ -2,6 +2,7 @@ package com.memoryseal.memorysealbackend.domain.contributor.controller;
 
 import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.req.BuryRequestDto;
 import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.ContributorResponseDto;
+import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.PageResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.service.ContributorService;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
@@ -14,6 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,10 +48,12 @@ public class ContributorController {
     })
     @GetMapping("/{capsuleId}/collaborators")
     @Operation(summary = "공동 작업자 리스트 조회")
-    public List<ContributorResponseDto> getDetail(
+    public ResponseEntity<PageResponseDto<ContributorResponseDto>> getDetail(
             @Parameter(description = "타임캡슐 ID", required = true)
-            @PathVariable Long capsuleId) {
-        return contributorService.getDetail(capsuleId);
+            @PathVariable Long capsuleId,
+            @RequestParam(defaultValue = "0") int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        return ResponseEntity.ok(new PageResponseDto<>(contributorService.getDetail(capsuleId, pageable)));
     }
 
     @ApiResponses({

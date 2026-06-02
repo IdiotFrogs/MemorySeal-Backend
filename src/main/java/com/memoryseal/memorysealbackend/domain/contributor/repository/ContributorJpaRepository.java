@@ -2,6 +2,8 @@ package com.memoryseal.memorysealbackend.domain.contributor.repository;
 
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,4 +23,6 @@ public interface ContributorJpaRepository extends JpaRepository<Contributor, Lon
     boolean existsByTimeCapsuleIdAndUserId(Long timecapsuleId, Long userId);
 
     void deleteByTimeCapsuleId(Long timeCapsuleId);
+
+    Page<Contributor> findByTimeCapsuleId(Long timeCapsuleId, Pageable pageable);
 }
