@@ -20,6 +20,8 @@ import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -60,7 +62,7 @@ public class ContributorService {
         return currentUserId;
     }
 
-    public List<ContributorResponseDto> getDetail(Long capsuleId) {
+    public Page<ContributorResponseDto> getDetail(Long capsuleId, Pageable pageable) {
         Long currentUserId = getCurrentUserId();
         if(!timeCapsuleJpaRepository.existsById(capsuleId)) {
             throw new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND);
@@ -68,26 +70,26 @@ public class ContributorService {
         if(!contributorJpaRepository.existsByTimeCapsuleIdAndUserId(capsuleId, currentUserId)) {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
-        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
+        Page<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId, pageable);
 
-        return contributors.stream()
-                .map(contributor -> {
-                    User user = userJpaRepository.findById(contributor.getUserId())
-                            .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-                    boolean isMe = false;
-                    if(user.getId().equals(currentUserId)) {
-                        isMe = true;
-                    }
-                    return ContributorResponseDto.builder()
-                            .contributorRole(contributor.getContributorRole())
-                            .nickname(user.getNickname())
-                            .userId(user.getId())
-                            .profileImageUrl(user.getProfileImage() != null ? user.getProfileImage().getFileUrl() : null)
-                            .userActiveStatus(user.getUserActiveStatus())
-                            .isMe(isMe)
-                            .build();
-                })
-                .collect(Collectors.toList());
+        List<Long> userIds = contributors.getContent().stream()
+                .map(Contributor::getUserId)
+                .toList();
+
+        Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        return contributors.map(contributor -> {
+            User user = userMap.get(contributor.getUserId());
+            return ContributorResponseDto.builder()
+                    .contributorRole(contributor.getContributorRole())
+                    .nickname(user.getNickname())
+                    .userId(user.getId())
+                    .profileImageUrl(user.getProfileImage() != null ? user.getProfileImage().getFileUrl() : null)
+                    .userActiveStatus(user.getUserActiveStatus())
+                    .isMe(user.getId().equals(currentUserId))
+                    .build();
+        });
     }
 
     @Transactional
