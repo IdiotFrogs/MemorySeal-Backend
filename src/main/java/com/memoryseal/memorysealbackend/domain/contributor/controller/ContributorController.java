@@ -51,8 +51,9 @@ public class ContributorController {
     public ResponseEntity<PageResponseDto<ContributorResponseDto>> getDetail(
             @Parameter(description = "타임캡슐 ID", required = true)
             @PathVariable Long capsuleId,
-            @RequestParam(defaultValue = "0") int page) {
-        Pageable pageable = PageRequest.of(page, 10);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(new PageResponseDto<>(contributorService.getDetail(capsuleId, pageable)));
     }
 
