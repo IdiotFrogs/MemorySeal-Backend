@@ -251,7 +251,7 @@ public class ContributorService {
             return getDetail(capsuleId, pageable);
         }
 
-        List<Long> userIds = userJpaRepository.findByNicknameContaining(nickname).stream()
+        List<Long> userIds = userJpaRepository.findByNicknameContaining(nickname.trim()).stream()
                 .map(User::getId)
                 .toList();
 
