@@ -110,7 +110,7 @@ public class TimeCapsuleContentService {
         return TimeCapsuleContentResDto.toDto(content);
     }
 
-    public List<UserContentDto> getMyContent(Long timeCapsuleId) {
+    public List<UserContentDto> getContent(Long timeCapsuleId) {
         Long currentUserId = getCurrentUserId();
         Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, timeCapsuleId)
                 .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
@@ -140,6 +140,20 @@ public class TimeCapsuleContentService {
                             .build();
                 })
                 .toList();
+    }
+
+    public List<TimeCapsuleContentResDto> getMyContent(Long timeCapsuleId) {
+        Long currentUserId = getCurrentUserId();
+        if(!contributorJpaRepository.existsByTimeCapsuleIdAndUserId(timeCapsuleId, currentUserId)) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
+
+        List<TimeCapsuleContent> contents = contentJpaRepository.findByTimeCapsuleIdAndUserId(timeCapsuleId, currentUserId);
+
+        return contents.stream()
+                .map(TimeCapsuleContentResDto::toDto)
+                .toList();
+
     }
 
     @Transactional
