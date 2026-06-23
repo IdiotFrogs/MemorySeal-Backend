@@ -4,6 +4,7 @@ import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import com.memoryseal.memorysealbackend.domain.file.repository.AttachedFileJpaRepository;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.MyTimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsule;
@@ -142,7 +143,7 @@ public class TimeCapsuleContentService {
                 .toList();
     }
 
-    public List<TimeCapsuleContentResDto> getMyContent(Long timeCapsuleId) {
+    public List<MyTimeCapsuleContentResDto> getMyContent(Long timeCapsuleId) {
         Long currentUserId = getCurrentUserId();
         if(!contributorJpaRepository.existsByTimeCapsuleIdAndUserId(timeCapsuleId, currentUserId)) {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
@@ -151,13 +152,13 @@ public class TimeCapsuleContentService {
         List<TimeCapsuleContent> contents = contentJpaRepository.findByTimeCapsuleIdAndUserId(timeCapsuleId, currentUserId);
 
         return contents.stream()
-                .map(TimeCapsuleContentResDto::toDto)
+                .map(MyTimeCapsuleContentResDto::toDto)
                 .toList();
 
     }
 
     @Transactional
-    public void deleteContent(List<Long> contentIds) {
+    public void deleteContent(List<Long> contentIds, List<Long> fileIds) {
         Long currentUserId = getCurrentUserId();
 
         List<TimeCapsuleContent> contents = contentJpaRepository.findAllById(contentIds);
@@ -174,19 +175,53 @@ public class TimeCapsuleContentService {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        List<Long> ids = contents.stream()
-                        .map(TimeCapsuleContent::getId)
-                        .toList();
+        if(fileIds != null && !fileIds.isEmpty()) {
+            List<AttachedFile> files = attachedFileJpaRepository.findAllById(fileIds);
 
-        List<AttachedFile> files = attachedFileJpaRepository.findByTimeCapsuleContentIdIn(ids);
+            boolean hasInvalidFile = files.stream()
+                    .anyMatch(file -> !contentIds.contains(file.getTimeCapsuleContent().getId()));
 
-        if(!files.isEmpty()) {
+            if(hasInvalidFile) {
+                throw new AuthException(ErrorCode.ACCESS_DENIED);
+            }
+
+            List<Long> contentIdsWithFiles = attachedFileJpaRepository
+                    .findByTimeCapsuleContentIdIn(contentIds).stream()
+                    .map(file -> file.getTimeCapsuleContent().getId())
+                    .distinct()
+                    .toList();
+
+            List<Long> coveredContentIds = files.stream()
+                    .map(file -> file.getTimeCapsuleContent().getId())
+                    .distinct()
+                    .toList();
+
+            boolean hasMissingFileIds = contentIdsWithFiles.stream()
+                    .anyMatch(id -> !coveredContentIds.contains(id));
+
+            if(hasMissingFileIds) {
+                throw new AuthException(ErrorCode.FILE_IDS_REQUIRED);
+            }
+
             files.parallelStream()
                     .forEach(file -> s3Service.deleteFileFromS3(file.getFileUrl()));
-            List<Long> fileIds = files.stream().map(AttachedFile::getId).toList();
             attachedFileJpaRepository.deleteAllByIdInBatch(fileIds);
-        }
 
-        contentJpaRepository.deleteAllByIdInBatch(ids);
+            List<Long> remainFileContentIds = attachedFileJpaRepository
+                    .findByTimeCapsuleContentIdIn(contentIds).stream()
+                    .map(file -> file.getTimeCapsuleContent().getId())
+                    .distinct()
+                    .toList();
+
+            List<Long> emptyFileContentIds = contentIds.stream()
+                    .filter(id -> !remainFileContentIds.contains(id))
+                    .toList();
+
+            if(!emptyFileContentIds.isEmpty()) {
+                contentJpaRepository.deleteAllByIdInBatch(emptyFileContentIds);
+            }
+        }else {
+            contentJpaRepository.deleteAllByIdInBatch(contentIds);
+        }
     }
 }

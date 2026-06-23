@@ -1,5 +1,6 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller;
 
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.MyTimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.service.TimeCapsuleContentService;
@@ -124,16 +125,19 @@ public class TimeCapsuleContentController {
                             examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/api/time-capsule-content/{timeCapsuleId}/my-contents\"}")))
     })
     @GetMapping("/{timeCapsuleId}/my-contents")
-    public ResponseEntity<List<TimeCapsuleContentResDto>> getMyContents(
+    public ResponseEntity<List<MyTimeCapsuleContentResDto>> getMyContents(
             @PathVariable Long timeCapsuleId
     ) {
-        List<TimeCapsuleContentResDto> dto = timeCapsuleContentService.getMyContent(timeCapsuleId);
+        List<MyTimeCapsuleContentResDto> dto = timeCapsuleContentService.getMyContent(timeCapsuleId);
         return ResponseEntity.ok(dto);
     }
 
     @Operation(summary = "타임캡슐 내용 삭제")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "파일 ID 필요",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "파일 ID 필요", value = "{\"status\": \"400\", \"error\": \"FILE_IDS_REQUIRED\", \"message\": \"삭제할 파일 ID를 입력하세요.\", \"path\": \"/api/time-capsule-content/{contentId}\"}"))),
             @ApiResponse(responseCode = "401", description = "로그인 필요",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(name = "로그인 필요", value = "{\"status\": \"401\", \"error\": \"NEED_LOGIN\", \"message\": \"로그인이 필요합니다.\", \"path\": \"/api/time-capsule-content/{contentId}\"}"))),
@@ -145,8 +149,10 @@ public class TimeCapsuleContentController {
                     examples = @ExampleObject(name = "타임캡슐 내용을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"CONTENT_NOT_FOUND\", \"message\": \"타임캡슐을 내용을 찾을 수 없습니다.\", \"path\": \"/api/time-capsule-content/{contentId}\"}")))
     })
     @DeleteMapping
-    public ResponseEntity<Void> deleteContent(@RequestParam List<Long> contentIds) {
-        timeCapsuleContentService.deleteContent(contentIds);
+    public ResponseEntity<Void> deleteContent(
+            @RequestParam List<Long> contentIds,
+            @RequestParam(required = false) List<Long> fileIds) {
+        timeCapsuleContentService.deleteContent(contentIds, fileIds);
         return ResponseEntity.ok().build();
     }
 }
