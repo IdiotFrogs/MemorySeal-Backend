@@ -1,5 +1,6 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.service;
 
+import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.PageResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
@@ -18,6 +19,8 @@ import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -111,36 +114,37 @@ public class TimeCapsuleContentService {
         return TimeCapsuleContentResDto.toDto(content);
     }
 
-    public List<UserContentDto> getContent(Long timeCapsuleId) {
+    public PageResponseDto<UserContentDto> getContent(Long timeCapsuleId, Pageable pageable) {
         Long currentUserId = getCurrentUserId();
-        Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, timeCapsuleId)
-                .orElseThrow(() -> new AuthException(ErrorCode.ACCESS_DENIED));
+        if(!contributorJpaRepository.existsByTimeCapsuleIdAndUserId(timeCapsuleId, currentUserId)) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
 
-        List<TimeCapsuleContent> contents = contentJpaRepository.findByTimeCapsuleId(timeCapsuleId);
-        List<Long> userIds = contents.stream()
-                .map(c -> c.getUser().getId())
-                .distinct()
+        Page<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(timeCapsuleId, pageable);
+
+        List<Long> userIds = contributors.getContent().stream()
+                .map(Contributor::getUserId)
                 .toList();
 
         Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
 
-        Map<Long, List<TimeCapsuleContent>> groupByUser = contents.stream()
+        Map<Long, List<TimeCapsuleContent>> groupByUser = contentJpaRepository
+                .findByTimeCapsuleIdAndUserIdIn(timeCapsuleId, userIds).stream()
                 .collect(Collectors.groupingBy(c -> c.getUser().getId()));
 
-        return groupByUser.entrySet().stream()
-                .map(entry -> {
-                    User user = userMap.get(entry.getKey());
+        return new PageResponseDto<>(contributors
+                .map(contributor -> {
+                    User user = userMap.get(contributor.getUserId());
                     return UserContentDto.builder()
-                            .userId(entry.getKey())
+                            .userId(user.getId())
                             .nickname(user.getNickname())
                             .profileImageUrl(user.getProfileImage().getFileUrl())
-                            .capsuleContents(entry.getValue().stream()
+                            .capsuleContents(groupByUser.getOrDefault(user.getId(), List.of()).stream()
                                     .map(TimeCapsuleContentResDto::toDto)
                                     .toList())
                             .build();
-                })
-                .toList();
+                }));
     }
 
     public List<MyTimeCapsuleContentResDto> getMyContent(Long timeCapsuleId) {

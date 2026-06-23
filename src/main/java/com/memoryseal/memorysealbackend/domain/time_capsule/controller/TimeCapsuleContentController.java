@@ -1,5 +1,6 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller;
 
+import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.PageResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.MyTimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleContentResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.UserContentDto;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -107,11 +110,13 @@ public class TimeCapsuleContentController {
                     examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/api/time-capsule-content/{timeCapsuleId}/contents\"}")))
     })
     @GetMapping("/{timeCapsuleId}/contents")
-    public ResponseEntity<List<UserContentDto>> getContents(
-            @PathVariable Long timeCapsuleId
+    public ResponseEntity<PageResponseDto<UserContentDto>> getContents(
+            @PathVariable Long timeCapsuleId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        List<UserContentDto> dto = timeCapsuleContentService.getContent(timeCapsuleId);
-        return ResponseEntity.ok(dto);
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(timeCapsuleContentService.getContent(timeCapsuleId, pageable));
     }
 
     @Operation(summary = "내 타임캡슐 내용 조회")

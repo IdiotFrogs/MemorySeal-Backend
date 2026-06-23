@@ -12,5 +12,7 @@ public interface ContentJpaRepository extends JpaRepository<TimeCapsuleContent, 
 
     List<TimeCapsuleContent> findByTimeCapsuleIdAndUserId(Long timeCapsuleId, Long userId);
 
+    List<TimeCapsuleContent> findByTimeCapsuleIdAndUserIdIn(Long timeCapsuleId, List<Long> userIds);
+
     void deleteByIdAndUserId(Long id, Long userId);
 }
