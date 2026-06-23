@@ -1,5 +1,6 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res;
 
+import com.memoryseal.memorysealbackend.domain.file.dto.res.AttachedFileResDto;
 import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleContent;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,34 +14,33 @@ import java.util.List;
 @Setter
 @Builder
 @Schema(
-        description = "생성된 타임캡슐 내용 DTO",
-        requiredProperties = {"contentId", "content", "attachedFileUrls"}
+        description = "내 타임캡슐 내용 조회 응답 DTO",
+        requiredProperties = {"contentId", "content", "attachedFiles"}
 )
-public class TimeCapsuleContentResDto {
+public class MyTimeCapsuleContentResDto {
     @Schema(description = "타임캡슐 내용 ID")
     private Long contentId;
 
     @Schema(description = "타임캡슐 내용 텍스트", nullable = true)
     private String content;
 
-    @Schema(description = "타임캡슐 내용 이미지 URL 목록", nullable = true)
-    private List<String> attachedFileUrls;
+    @Schema(description = "첨부파일 목록", nullable = true)
+    private List<AttachedFileResDto> attachedFiles;
 
-    public static TimeCapsuleContentResDto toDto(TimeCapsuleContent timeCapsuleContent) {
+    public static MyTimeCapsuleContentResDto toDto(TimeCapsuleContent timeCapsuleContent) {
         if (timeCapsuleContent == null) {
             return null;
         } else {
-            List<String> fileUrls = timeCapsuleContent.getAttachedFiles().isEmpty()
+            List<AttachedFileResDto> attachedFiles = timeCapsuleContent.getAttachedFiles().isEmpty()
                     ? null
-                    : timeCapsuleContent.getAttachedFiles()
-                        .stream()
-                        .map(AttachedFile::getFileUrl)
+                    : timeCapsuleContent.getAttachedFiles().stream()
+                        .map(AttachedFileResDto::toDto)
                         .toList();
 
-            return TimeCapsuleContentResDto.builder()
+            return MyTimeCapsuleContentResDto.builder()
                     .contentId(timeCapsuleContent.getId())
                     .content(timeCapsuleContent.getContent())
-                    .attachedFileUrls(fileUrls)
+                    .attachedFiles(attachedFiles)
                     .build();
         }
     }

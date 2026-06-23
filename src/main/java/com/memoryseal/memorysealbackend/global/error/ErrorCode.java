@@ -20,6 +20,7 @@ public enum ErrorCode {
     CANNOT_KICK_HOST(HttpStatus.BAD_REQUEST, "호스트는 추방할 수 없습니다."),
     HOST_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "호스트는 타임캡슐을 나갈 수 없습니다."),
     CANNOT_DELEGATE_TO_SELF(HttpStatus.BAD_REQUEST, "자기 자신에게 호스트를 위임할 수 없습니다."),
+    FILE_IDS_REQUIRED(HttpStatus.BAD_REQUEST, "삭제할 파일 ID를 입력하세요."),
 
     // 401 UnAuthorized
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
