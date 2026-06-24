@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 @Slf4j
 @RestControllerAdvice
@@ -14,6 +16,12 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ErrorResponse> handleAuthException(AuthException e, HttpServletRequest request) {
         log.error("AuthException: {}", e.getErrorCode(), request.getRequestURI());
         return ErrorResponse.toResponseEntity(e.getErrorCode(), request.getRequestURI());
+    }
+
+    @ExceptionHandler({MultipartException.class, MaxUploadSizeExceededException.class})
+    protected ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(Exception e, HttpServletRequest request) {
+        log.error("FILE SIZE EXCEEDED: {}", e.getMessage());
+        return ErrorResponse.toResponseEntity(ErrorCode.FILE_SIZE_EXCEEDED, request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
