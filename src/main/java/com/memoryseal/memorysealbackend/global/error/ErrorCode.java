@@ -45,6 +45,9 @@ public enum ErrorCode {
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     ALREADY_BURIED(HttpStatus.CONFLICT, "이미 묻힌 타임캡슐입니다."),
 
+    //413 PAYLOAD TOO LARGE
+    FILE_SIZE_EXCEEDED(HttpStatus.PAYLOAD_TOO_LARGE, "파일 크기가 제한을 초과했습니다."),
+
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     APPLE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Apple 서버 통신 중 오류가 발생했습니다."),
