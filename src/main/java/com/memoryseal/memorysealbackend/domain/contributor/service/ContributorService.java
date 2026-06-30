@@ -19,6 +19,7 @@ import com.memoryseal.memorysealbackend.global.FCM.FCMService;
 import com.memoryseal.memorysealbackend.global.aws.service.S3Service;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
+import com.memoryseal.memorysealbackend.global.util.KoreanUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -251,26 +252,29 @@ public class ContributorService {
             return getDetail(capsuleId, pageable);
         }
 
-        List<Long> userIds = userJpaRepository.findByNicknameContaining(nickname.trim()).stream()
+        String trimmedNickname = nickname.trim();
+
+        List<Contributor> allContributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
+        List<Long> capsuleUserIds = allContributors.stream()
+                .map(Contributor::getUserId)
+                .toList();
+
+        Map<Long, User> allUserMap = userJpaRepository.findAllById(capsuleUserIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        List<Long> matchedUserIds = allUserMap.values().stream()
+                .filter(u -> KoreanUtil.matchesChosungPattern(u.getNickname(), trimmedNickname))
                 .map(User::getId)
                 .toList();
 
-        if(userIds.isEmpty()) {
+        if(matchedUserIds.isEmpty()) {
             return Page.empty(pageable);
         }
 
-        Page<Contributor> contributors = contributorJpaRepository
-                .findByTimeCapsuleIdAndUserIdIn(capsuleId, userIds, pageable);
-
-        Map<Long, User> userMap = userJpaRepository.findAllById(
-                contributors.getContent().stream()
-                        .map(Contributor::getUserId)
-                        .toList()
-                ).stream()
-                .collect(Collectors.toMap(User::getId, u -> u));
+        Page<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleIdAndUserIdIn(capsuleId, matchedUserIds, pageable);
 
         return contributors.map(contributor -> {
-            User user = userMap.get(contributor.getUserId());
+            User user = allUserMap.get(contributor.getUserId());
             return ContributorResponseDto.builder()
                     .contributorRole(contributor.getContributorRole())
                     .nickname(user.getNickname())
