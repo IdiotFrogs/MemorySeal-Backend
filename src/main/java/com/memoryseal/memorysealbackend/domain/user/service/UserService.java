@@ -1,6 +1,9 @@
 package com.memoryseal.memorysealbackend.domain.user.service;
 
 import com.memoryseal.memorysealbackend.domain.auth.repository.RefreshTokenRepository;
+import com.memoryseal.memorysealbackend.domain.file.entity.AttachedFile;
+import com.memoryseal.memorysealbackend.domain.file.entity.FileType;
+import com.memoryseal.memorysealbackend.domain.file.repository.AttachedFileJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.controller.dto.req.UserCreateDto;
 import com.memoryseal.memorysealbackend.domain.user.controller.dto.res.UserDetailResponseDto;
 import com.memoryseal.memorysealbackend.domain.user.controller.dto.res.UserResponseDto;
@@ -13,6 +16,7 @@ import com.memoryseal.memorysealbackend.global.oauth.apple.AppleAuthClient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -30,6 +34,10 @@ public class UserService {
     private final S3Service s3Service;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AppleAuthClient appleAuthClient;
+    private final AttachedFileJpaRepository attachedFileJpaRepository;
+
+    @Value("${app.default-image-url}")
+    private String defaultProfileUrl;
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -101,7 +109,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto updateMyDetail(String nickname, MultipartFile file) throws IOException {
+    public UserResponseDto updateMyDetail(String nickname, MultipartFile file, Boolean resetProfileImage) throws IOException {
         Long currentUserId = getCurrentUserId();
         User user = userJpaRepository.findById(currentUserId).orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         if(nickname != null && !nickname.isBlank()) {
@@ -109,6 +117,22 @@ public class UserService {
                 throw new AuthException(ErrorCode.DUPLICATE_NICKNAME);
             }
             user.setNickname(nickname);
+        }
+
+        if(Boolean.TRUE.equals(resetProfileImage)) {
+            if(user.getProfileImage() != null && !defaultProfileUrl.equals(user.getProfileImage().getFileUrl())) {
+                s3Service.deleteFileFromS3(user.getProfileImage().getFileUrl());
+                attachedFileJpaRepository.delete(user.getProfileImage());
+            }
+
+            AttachedFile defaultProfile = AttachedFile.builder()
+                    .fileUrl(defaultProfileUrl)
+                    .fileSize(0L)
+                    .fileType(FileType.IMAGE)
+                    .isMain(false)
+                    .build();
+
+            user.setProfileImage(defaultProfile);
         }
 
         if(file != null && !file.isEmpty()) {
