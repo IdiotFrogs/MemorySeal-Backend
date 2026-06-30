@@ -138,8 +138,9 @@ public class    UserController {
     @Operation(summary = "로그인된 유저 정보 수정", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(required = false))
     public ResponseEntity<UserResponseDto> updateMyDetail(
             @RequestParam(value = "nickname", required = false) String nickname,
-            @RequestPart(value = "profileImage", required = false) MultipartFile file) throws IOException {
-        UserResponseDto response = userService.updateMyDetail(nickname, file);
+            @RequestPart(value = "profileImage", required = false) MultipartFile file,
+            @RequestParam(value = "resetProfileImage", required = false, defaultValue = "false") Boolean resetProfileImage) throws IOException {
+        UserResponseDto response = userService.updateMyDetail(nickname, file, resetProfileImage);
         return ResponseEntity.ok(response);
     }
 
