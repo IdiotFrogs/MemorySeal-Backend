@@ -21,6 +21,8 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -35,12 +37,26 @@ public class LoginService {
     private final GoogleProperties googleProperties;
     private final AppleAuthClient appleAuthClient;
 
-    /*
-    @Value("${google.client.ids}")
-    private List<String> googleClientIds;
-     */
     @Value("${app.default-image-url}")
     private String defaultProfileUrl;
+
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication == null || !authentication.isAuthenticated()) {
+            throw new AuthException(ErrorCode.NEED_LOGIN);
+        }
+        Object principal = authentication.getPrincipal();
+        Long currentUserId;
+        if(principal instanceof User) {
+            currentUserId = ((User) principal).getId();
+        }else if(principal instanceof String) {
+            currentUserId = Long.valueOf((String) principal);
+        }else {
+            log.error("예상치 못한 Principal 타입: {}", principal.getClass().getName());
+            throw new AuthException(ErrorCode.NEED_LOGIN);
+        }
+        return currentUserId;
+    }
 
     @Transactional
     public String verifyGoogleIdToken(String idTokenString) {
@@ -152,14 +168,22 @@ public class LoginService {
         }
     }
 
+    @Transactional
+    public void updateFcmToken(String fcmToken) {
+        if(fcmToken == null || fcmToken.isBlank()) {
+            throw new AuthException(ErrorCode.INVALID_FCM_TOKEN);
+        }
 
-    public GeneratedToken execute(String providerId, String provider, String fcmToken) {
+        Long currentUserId = getCurrentUserId();
+        User user = userJpaRepository.findById(currentUserId)
+                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+        user.setFcmToken(fcmToken);
+    }
+
+
+    public GeneratedToken execute(String providerId, String provider) {
         User user = userJpaRepository.findByProviderAndProviderIdAndUserActiveStatus(provider, providerId, true)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-
-        if(fcmToken != null) {
-            user.setFcmToken(fcmToken);
-        }
 
         GeneratedToken generatedToken = jwtUtil.generateToken(user.getEmail(), Role.USER.getKey());
 

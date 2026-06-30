@@ -97,7 +97,7 @@ public class AuthController {
             @RequestBody GoogleLoginRequest request
             ) {
         String providerId = loginService.verifyGoogleIdToken(request.getIdToken());
-        GeneratedToken response = loginService.execute(providerId, "google", request.getFcmToken());
+        GeneratedToken response = loginService.execute(providerId, "google");
 
         return ResponseEntity.ok(response);
     }
@@ -110,15 +110,33 @@ public class AuthController {
                     examples = @ExampleObject(value = "{\"status\": \"401\", \"error\": \"INVALID_TOKEN\", \"message\": \"유효하지 않은 토큰입니다.\", \"path\": \"/auth/login/apple\"}"))),
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = "{\"status\": \"401\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/auth/login/apple\"}")))
+                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/auth/login/apple\"}")))
     })
     @PostMapping("/login/apple")
     public ResponseEntity<GeneratedToken> loginApple(
             @RequestBody AppleLoginRequest request
     ) {
         String providerId = loginService.verifyAppleIdToken(request.getIdToken(), request.getAuthorizationCode());
-        GeneratedToken response = loginService.execute(providerId, "apple", request.getFcmToken());
+        GeneratedToken response = loginService.execute(providerId, "apple");
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "FCM 토큰 등록")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", description = "유효하지 않은 토큰",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"400\", \"error\": \"INVALID_FCM_TOKEN\", \"message\": \"유효하지 않은 FCM 토큰입니다.\", \"path\": \"/auth/fcm-token\"}"))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/auth/fcm-token\"}")))
+    })
+    @PutMapping("/fcm-token")
+    public ResponseEntity<Void> updateFcmToken(
+            @RequestParam String fcmToken
+    ) {
+        loginService.updateFcmToken(fcmToken);
+        return ResponseEntity.ok().build();
     }
 
     /*
