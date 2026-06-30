@@ -143,10 +143,10 @@ public class ContributorController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "403", description = "접근 권한 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                            examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다\", \"path\": \"/time-capsules/{capsuleId}/collaborators/search\"}"))),
-            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+                    examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다\", \"path\": \"/time-capsules/{capsuleId}/collaborators/search\"}"))),
+            @ApiResponse(responseCode = "404", description = "타임캡슐을 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"USER_NOT_FOUND\", \"message\": \"존재하지 않는 사용자 입니다.\", \"path\": \"/time-capsules/{capsuleId}/collaborators/search\"}")))
+                    examples = @ExampleObject(name = "타임캡슐을 찾을 수 없음", value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/{capsuleId}/collaborators/search\"}")))
     })
     @GetMapping("/{capsuleId}/collaborators/search")
     @Operation(summary = "공동 작업자 닉네임 검색")
