@@ -44,6 +44,7 @@ public enum ErrorCode {
     ALREADY_ONBOARDED(HttpStatus.CONFLICT, "이미 온보딩이 완료된 유저입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     ALREADY_BURIED(HttpStatus.CONFLICT, "이미 묻힌 타임캡슐입니다."),
+    ALREADY_DELETED(HttpStatus.CONFLICT, "이미 삭제되었거나 변경된 데이터입니다."),
 
     //413 PAYLOAD TOO LARGE
     FILE_SIZE_EXCEEDED(HttpStatus.PAYLOAD_TOO_LARGE, "파일 크기가 제한을 초과했습니다."),
