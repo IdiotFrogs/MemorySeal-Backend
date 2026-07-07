@@ -116,7 +116,7 @@ public class InviteService {
                         .collect(Collectors.toMap(User::getId, u-> u));
 
         userMap.values().forEach(user ->
-                fcmService.sendJoinRequestNotification(user.getFcmToken(), timeCapsule.getTitle(), joinUser.getNickname()));
+                fcmService.sendJoinRequestNotification(user.getFcmToken(), timeCapsule.getTitle(), joinUser.getNickname(), capsuleId));
     }
 
     @Transactional

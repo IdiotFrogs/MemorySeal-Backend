@@ -49,7 +49,7 @@ public class TimeCapsuleScheduler {
             contributors.forEach(c -> {
                 User user = userJpaRepository.findById(c.getUserId())
                         .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-                fcmService.sendOpenedNotification(user.getFcmToken(), capsule.getTitle());
+                fcmService.sendOpenedNotification(user.getFcmToken(), capsule.getTitle(), capsule.getId());
             });
         });
 
