@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     // 400 Bad Request
-    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "파라미터 값을 확인해 주세요"),
+    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "파라미터 값을 확인해 주세요."),
     MISSING_AUTH_CODE(HttpStatus.BAD_REQUEST, "인증 코드가 전달되지 않았습니다."),
     INVALID_INVITE_CODE(HttpStatus.BAD_REQUEST, "유효하지 않거나 만료된 초대 코드입니다."),
     EMPTY_CONTENT(HttpStatus.BAD_REQUEST, "내용 또는 파일 중 적어도 하나는 포함되어야 합니다."),
