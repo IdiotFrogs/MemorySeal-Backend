@@ -118,4 +118,26 @@ public class InviteService {
         userMap.values().forEach(user ->
                 fcmService.sendJoinRequestNotification(user.getFcmToken(), timeCapsule.getTitle(), joinUser.getNickname()));
     }
+
+    @Transactional
+    public void joinCapsule(Long capsuleId) {
+        Long currentUserId = getCurrentUserId();
+
+        if(!timeCapsuleJpaRepository.existsById(capsuleId)) {
+            throw new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND);
+        }
+
+        if(contributorJpaRepository.existsByTimeCapsuleIdAndUserId(capsuleId, currentUserId)) {
+            throw new AuthException(ErrorCode.ALREADY_CONTRIBUTOR);
+        }
+
+        Contributor contributor = Contributor.builder()
+                .timeCapsuleId(capsuleId)
+                .userId(currentUserId)
+                .contributorRole(ContributorRole.CONTRIBUTOR)
+                .build();
+
+        contributorJpaRepository.save(contributor);
+    }
+
 }
