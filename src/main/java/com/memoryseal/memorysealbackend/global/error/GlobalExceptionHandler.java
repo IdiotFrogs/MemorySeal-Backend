@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -31,6 +32,14 @@ public class GlobalExceptionHandler {
     ) {
         log.error("OPTIMISTIC LOCK CONFLICT: {}", e.getMessage());
         return ErrorResponse.toResponseEntity(ErrorCode.ALREADY_DELETED, request.getRequestURI());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<ErrorResponse> handleMehtodArgumentNoValidException(
+            MethodArgumentNotValidException e, HttpServletRequest request
+    ) {
+        log.error("VALIDATION ERROR: {}", e.getMessage());
+        return ErrorResponse.toResponseEntity(ErrorCode.INVALID_PARAMETER, request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
