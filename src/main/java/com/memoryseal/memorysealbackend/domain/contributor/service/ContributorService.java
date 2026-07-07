@@ -130,7 +130,7 @@ public class ContributorService {
                 .collect(Collectors.toMap(User::getId, u -> u));
 
         userMap.values().forEach(user ->
-                fcmService.sendBuriedNotification(user.getFcmToken(), timeCapsule.getTitle()));
+                fcmService.sendBuriedNotification(user.getFcmToken(), timeCapsule.getTitle(), capsuleId));
 
         List<TimeCapsuleContent> myContents = contentJpaRepository.findByTimeCapsuleIdAndUserId(capsuleId, currentUserId);
 
