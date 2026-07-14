@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -161,6 +162,7 @@ public class TimeCapsuleService {
                             .role(contributor.getContributorRole())
                             .build();
                 })
+                .sorted(Comparator.comparing(TimeCapsuleNameDto::getCreatedAt).reversed())
                 .collect(toList());
     }
 
