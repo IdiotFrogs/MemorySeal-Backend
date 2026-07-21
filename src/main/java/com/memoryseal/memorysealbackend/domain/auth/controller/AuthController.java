@@ -142,9 +142,12 @@ public class AuthController {
     @Operation(summary = "logout")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "성공"),
-            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰",
+            @ApiResponse(responseCode = "404", description = "유효하지 않은 토큰",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = "{\"status\": \"401\", \"error\": \"REFRESHTOKEN_NOT_FOUND\", \"message\": \"저장된 리프레시 토큰이 없습니다.\", \"path\": \"/auth/logout\"}"))),
+                    examples = @ExampleObject(value = "{\"status\": \"401\", \"error\": \"INVALID_TOKEN\", \"message\": \"유효하지 않은 토큰입니다.\", \"path\": \"/auth/logout\"}"))),
+            @ApiResponse(responseCode = "404", description = "리프레시 토큰을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"REFRESHTOKEN_NOT_FOUND\", \"message\": \"저장된 리프레시 토큰이 없습니다.\", \"path\": \"/auth/logout\"}")))
     })
     @DeleteMapping("/logout")
     public ResponseEntity<Void> logout(

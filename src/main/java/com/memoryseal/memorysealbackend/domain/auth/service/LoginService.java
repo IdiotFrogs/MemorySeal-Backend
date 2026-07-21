@@ -183,10 +183,11 @@ public class LoginService {
 
     public void logout(String accessToken) {
         String actualToken = accessToken;
-        if(StringUtils.hasText(accessToken) && actualToken.startsWith("Bearer ")) {
-            actualToken = accessToken.substring(7);
+        if(!StringUtils.hasText(accessToken) || !actualToken.startsWith("Bearer ")) {
+            throw new AuthException(ErrorCode.INVALID_TOKEN);
         }
-        refreshTokenService.removeRefreshToken(accessToken);
+        actualToken = accessToken.substring(7);
+        refreshTokenService.removeRefreshToken(actualToken);
     }
 
 
