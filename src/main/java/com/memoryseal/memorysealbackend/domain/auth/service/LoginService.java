@@ -25,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 @Service
@@ -178,6 +179,14 @@ public class LoginService {
         User user = userJpaRepository.findById(currentUserId)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         user.setFcmToken(fcmToken);
+    }
+
+    public void logout(String accessToken) {
+        String actualToken = accessToken;
+        if(StringUtils.hasText(accessToken) && actualToken.startsWith("Bearer ")) {
+            actualToken = accessToken.substring(7);
+        }
+        refreshTokenService.removeRefreshToken(accessToken);
     }
 
 

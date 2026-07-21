@@ -139,26 +139,18 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    /*
-    @Operation(summary = "로그아웃")
+    @Operation(summary = "logout")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = "{\"status\": \"401\", \"error\": \"REFRESHTOKEN_NOT_FOUND\", \"message\": \"저장된 리프레시 토큰이 없습니다.\", \"path\": \"/auth/logout\"}"))),
+    })
     @DeleteMapping("/logout")
     public ResponseEntity<Void> logout(
-            @Parameter(description = "현재 유효한 Access Token", required = true)
-            @RequestHeader("Authorization") String authorizationHeader) {
-        if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        String accessToken = authorizationHeader.substring(7);
-
-        try {
-            refreshTokenService.removeRefreshToken(accessToken);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+            @RequestHeader("Authorization") String accessToken
+    ) {
+        loginService.logout(accessToken);
+        return ResponseEntity.ok().build();
     }
-     */
 }
