@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -27,7 +29,7 @@ public class TimeCapsuleScheduler {
     private final UserJpaRepository userJpaRepository;
     private final FCMService fcmService;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void sendOpenNotification() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
@@ -46,11 +48,14 @@ public class TimeCapsuleScheduler {
             List<Contributor> contributors = contributorJpaRepository
                     .findByTimeCapsuleId(capsule.getId());
 
-            contributors.forEach(c -> {
-                User user = userJpaRepository.findById(c.getUserId())
-                        .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
-                fcmService.sendOpenedNotification(user.getFcmToken(), capsule.getTitle(), capsule.getId());
-            });
+            List<Long> userIds = contributors.stream()
+                            .map(Contributor::getUserId)
+                            .toList();
+
+            Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                    .collect(Collectors.toMap(User::getId, u -> u));
+            userMap.values().forEach(user ->
+                    fcmService.sendOpenedNotification(user.getFcmToken(),capsule.getTitle(), capsule.getId()));
         });
 
         timeCapsuleJpaRepository.saveAll(capsules);
