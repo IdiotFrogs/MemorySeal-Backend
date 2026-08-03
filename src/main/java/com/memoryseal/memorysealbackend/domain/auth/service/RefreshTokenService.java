@@ -62,7 +62,8 @@ public class RefreshTokenService {
         }
 
         String userRole = jwtUtil.getRole(actualToken);
-        GeneratedToken newToken = jwtUtil.generateToken(userEmail, userRole);
+        String userProvider = jwtUtil.getProvider(actualToken);
+        GeneratedToken newToken = jwtUtil.generateToken(userEmail, userRole, userProvider);
 
         tokenEntity.updateAccessToken(newToken.getAccessToken());
         tokenEntity.setRefreshToken(newToken.getRefreshToken());

@@ -195,7 +195,7 @@ public class LoginService {
         User user = userJpaRepository.findByProviderAndProviderIdAndUserActiveStatus(provider, providerId, true)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
 
-        GeneratedToken generatedToken = jwtUtil.generateToken(user.getEmail(), Role.USER.getKey());
+        GeneratedToken generatedToken = jwtUtil.generateToken(user.getEmail(), Role.USER.getKey(), provider);
 
         refreshTokenService.saveTokenInfo(user.getEmail(), generatedToken.getRefreshToken(), generatedToken.getAccessToken());
 

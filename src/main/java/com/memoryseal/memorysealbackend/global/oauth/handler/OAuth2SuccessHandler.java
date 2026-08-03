@@ -33,13 +33,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         log.info("OAuth2 attributes: {}", oAuth2User.getAttributes());
 
         String email = oAuth2User.getAttribute("email");
+        String provider = oAuth2User.getAttribute("provider");
 
         String role = oAuth2User.getAuthorities().stream().
                 findFirst()
                 .map(grantedAuthority -> grantedAuthority.getAuthority())
                 .orElse("ROLE_USER");
 
-        GeneratedToken token = jwtUtil.generateToken(email, role);
+        GeneratedToken token = jwtUtil.generateToken(email, role, provider);
         log.info("generate accessToken = {}", token.getAccessToken());
         log.info("generate refreshToken = {}", token.getRefreshToken());
 

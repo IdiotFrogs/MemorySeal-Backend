@@ -41,7 +41,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         try {
             if(jwtUtil.verifyToken(token)) {
                 String email = jwtUtil.getUid(token);
-                User findUser = userJpaRepository.findByEmail(email)
+                String provider = jwtUtil.getProvider(token);
+                User findUser = userJpaRepository.findByEmailAndProvider(email, provider)
                         .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다."));
                 Authentication auth = getAuthentication(findUser);
                 SecurityContextHolder.getContext().setAuthentication(auth);
