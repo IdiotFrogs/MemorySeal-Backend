@@ -44,7 +44,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         log.info("generate accessToken = {}", token.getAccessToken());
         log.info("generate refreshToken = {}", token.getRefreshToken());
 
-        refreshTokenService.saveTokenInfo(email, token.getRefreshToken(), token.getAccessToken());
+        //refreshTokenService.saveTokenInfo(email, token.getRefreshToken(), token.getAccessToken());
 
         String targetUrl = UriComponentsBuilder.fromUriString("http://43.201.236.253.sslip.io:8080/auth/login/success")
                 //http://localhost:3000/oauth/callback
