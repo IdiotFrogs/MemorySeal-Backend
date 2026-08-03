@@ -27,24 +27,25 @@ public class JwtUtil {
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getSecret()));
     }
 
-    public GeneratedToken generateToken(String email, String role) {
+    public GeneratedToken generateToken(String email, String role, String provider) {
         Long now = new Date().getTime();
         Long accessTokenPeriod = 1000L * 60L * 30L;
         //Long refreshTokenPeriod = 1000L * 60L * 60L * 24L * 14;
-        String refreshToken = generateRefreshToken(email, role);
-        String accessToken = generateAccessToken(email, role);
+        String refreshToken = generateRefreshToken(email, role, provider);
+        String accessToken = generateAccessToken(email, role, provider);
         Long accessTokenExpiresIn = now + accessTokenPeriod;
         //Long refreshTokenExpiresIn = now + refreshTokenPeriod;
 
         return new GeneratedToken(accessToken, refreshToken, accessTokenExpiresIn);
     }
 
-    public String generateRefreshToken(String email, String role) {
+    public String generateRefreshToken(String email, String role, String provider) {
         // 토큰의 유효 기간을 밀리초 단위로 설정
         long refreshPeriod = 1000L * 60L * 60L * 24L * 30L;  // 30일
 
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
+        claims.put("provider", provider);
 
         Date now = new Date();
 
@@ -56,10 +57,11 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateAccessToken(String email, String role) {
+    public String generateAccessToken(String email, String role, String provider) {
         long tokenPeriod = 1000L * 60L * 60L * 24L; // 1일
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
+        claims.put("provider", provider);
 
         Date now = new Date();
         return Jwts.builder()
@@ -100,6 +102,15 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("role", String.class);
+    }
+
+    public String getProvider(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("provider", String.class);
     }
 
 

@@ -2,6 +2,8 @@ package com.memoryseal.memorysealbackend.domain.auth.service;
 
 import com.memoryseal.memorysealbackend.domain.auth.entity.RefreshToken;
 import com.memoryseal.memorysealbackend.domain.auth.repository.RefreshTokenRepository;
+import com.memoryseal.memorysealbackend.domain.user.entity.User;
+import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import com.memoryseal.memorysealbackend.global.security.jwt.GeneratedToken;
@@ -17,11 +19,13 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserJpaRepository userJpaRepository;
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public void saveTokenInfo(String email, String refreshToken, String accessToken) {
-        refreshTokenRepository.findById(email)
+    public void saveTokenInfo(Long userId, String refreshToken, String accessToken) {
+        String key = String.valueOf(userId);
+        refreshTokenRepository.findById(key)
                 .ifPresentOrElse(
                         token -> {
                             token.updateAccessToken(accessToken);
@@ -29,7 +33,7 @@ public class RefreshTokenService {
                             refreshTokenRepository.save(token);
                         },
                         () -> {
-                            refreshTokenRepository.save(new RefreshToken(email, accessToken, refreshToken));
+                            refreshTokenRepository.save(new RefreshToken(key, accessToken, refreshToken));
                         }
                 );
     }
@@ -52,9 +56,18 @@ public class RefreshTokenService {
         }
 
         String userEmail = jwtUtil.getUid(actualToken);
+        String userProvider = jwtUtil.getProvider(actualToken);
 
-        RefreshToken tokenEntity = refreshTokenRepository.findById(userEmail)
+        if(userProvider == null) {
+            throw new AuthException(ErrorCode.INVALID_TOKEN);
+        }
+
+        User user = userJpaRepository.findByEmailAndProvider(userEmail, userProvider)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+
+        String key = String.valueOf(user.getId());
+        RefreshToken tokenEntity = refreshTokenRepository.findById(key)
+                .orElseThrow(() -> new AuthException(ErrorCode.REFRESHTOKEN_NOT_FOUND));
 
         if(!tokenEntity.getRefreshToken().equals(actualToken)) {
             refreshTokenRepository.delete(tokenEntity);
@@ -62,7 +75,7 @@ public class RefreshTokenService {
         }
 
         String userRole = jwtUtil.getRole(actualToken);
-        GeneratedToken newToken = jwtUtil.generateToken(userEmail, userRole);
+        GeneratedToken newToken = jwtUtil.generateToken(userEmail, userRole, userProvider);
 
         tokenEntity.updateAccessToken(newToken.getAccessToken());
         tokenEntity.setRefreshToken(newToken.getRefreshToken());
