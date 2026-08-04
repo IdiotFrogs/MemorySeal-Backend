@@ -190,7 +190,15 @@ public class UserService {
         }
 
         user.setNickname("탈퇴한 사용자");
-        user.setProfileImage(null);
+
+        AttachedFile defaultProfile = AttachedFile.builder()
+                .fileUrl(defaultProfileUrl)
+                .fileSize(0L)
+                .fileType(FileType.IMAGE)
+                .isMain(false)
+                .build();
+        user.setProfileImage(defaultProfile);
+
         user.setAppleRefreshToken(null);
         user.setFcmToken(null);
 
