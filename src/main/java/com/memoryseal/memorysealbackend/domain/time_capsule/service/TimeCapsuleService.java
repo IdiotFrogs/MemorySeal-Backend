@@ -11,6 +11,7 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleCo
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.ContentJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
+import com.memoryseal.memorysealbackend.domain.time_capsule.repository.WateringJpaRepository;
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.global.aws.service.S3Service;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,7 @@ public class TimeCapsuleService {
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
     private final ContributorJpaRepository contributorJpaRepository;
     private final ContentJpaRepository contentJpaRepository;
+    private final WateringJpaRepository wateringJpaRepository;
     private final S3Service s3Service;
 
     private Long getCurrentUserId() {
@@ -146,12 +149,30 @@ public class TimeCapsuleService {
         Map<Long, TimeCapsule> timeCapsuleMap = timeCapsules.stream()
                 .collect(Collectors.toMap(TimeCapsule::getId, t -> t));
 
+        Map<Long, Long> wateringCountMap = wateringJpaRepository.countByTimeCapsuleIdIn(timeCapsuleIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
         return contributors.stream()
                 .map(contributor -> {
                     TimeCapsule timeCapsule = timeCapsuleMap.get(contributor.getTimeCapsuleId());
                     if(timeCapsule == null) {
                         throw new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND);
                     }
+
+                    int stage = 0;
+                    if(timeCapsule.getBuriedAt() != null && timeCapsule.getOpenedAt() != null) {
+                        long totalDays = ChronoUnit.DAYS.between(
+                                timeCapsule.getBuriedAt().toLocalDate(),
+                                timeCapsule.getOpenedAt().toLocalDate()
+                        );
+                        long wateringCount = wateringCountMap.getOrDefault(timeCapsule.getId(), 0L);
+                        double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;
+                        stage = Math.min((int) (percentage / 20) + 1, 5);
+                    }
+
                     return TimeCapsuleNameDto.builder()
                             .timeCapsuleId(timeCapsule.getId())
                             .title(timeCapsule.getTitle())
@@ -160,6 +181,7 @@ public class TimeCapsuleService {
                             .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                             .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
                             .role(contributor.getContributorRole())
+                            .stage(stage)
                             .build();
                 })
                 .sorted(Comparator.comparing(TimeCapsuleNameDto::getCreatedAt).reversed())

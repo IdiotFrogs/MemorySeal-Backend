@@ -44,4 +44,7 @@ public class TimeCapsuleNameDto {
 
     @Schema(description = "공동작업자 역할", examples = {"HOST", "CONTRIBUTOR"})
     private ContributorRole role;
+
+    @Schema(description = "물주기 단계")
+    private int stage;
 }
