@@ -11,6 +11,5 @@ public class WateringDto {
     private LocalDate wateredDate;
     private Boolean isWatered;
     private Long userId;
-    private String nickname;
     private String profileImageUrl;
 }

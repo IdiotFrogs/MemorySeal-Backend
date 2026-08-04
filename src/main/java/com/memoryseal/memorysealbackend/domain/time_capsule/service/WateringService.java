@@ -140,7 +140,6 @@ public class WateringService {
                             .wateredDate(date)
                             .isWatered(true)
                             .userId(user.getId())
-                            .nickname(user.getNickname())
                             .profileImageUrl(user.getProfileImage() != null ? user.getProfileImage().getFileUrl() : null)
                             .build();
                 })
