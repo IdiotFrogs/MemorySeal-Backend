@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @Schema(
         description = "사용자의 타임캡슐 목록 조회시 사용되는 정보 DTO",
-        requiredProperties = {"timeCapsuleId", "title", "openedAt", "mainImageUrl", "timeCapsuleStatus", "role"}
+        requiredProperties = {"timeCapsuleId", "title", "openedAt", "mainImageUrl", "timeCapsuleStatus", "role", "stage"}
 )
 public class TimeCapsuleNameDto {
 
