@@ -22,6 +22,7 @@ public enum ErrorCode {
     CANNOT_DELEGATE_TO_SELF(HttpStatus.BAD_REQUEST, "자기 자신에게 호스트를 위임할 수 없습니다."),
     FILE_IDS_REQUIRED(HttpStatus.BAD_REQUEST, "삭제할 파일 ID를 입력하세요."),
     INVALID_FCM_TOKEN(HttpStatus.BAD_REQUEST, "유효하지 않은 FCM 토큰입니다."),
+    NOT_TIMECAPSULE_BURIED(HttpStatus.BAD_REQUEST, "묻힌 상태의 타임캡슐이 아닙니다."),
 
     // 401 UnAuthorized
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
@@ -46,6 +47,7 @@ public enum ErrorCode {
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     ALREADY_BURIED(HttpStatus.CONFLICT, "이미 묻힌 타임캡슐입니다."),
     ALREADY_DELETED(HttpStatus.CONFLICT, "이미 삭제되었거나 변경된 데이터입니다."),
+    ALREADY_WATERED(HttpStatus.CONFLICT, "오늘 이미 물을 줬습니다."),
 
     //413 PAYLOAD TOO LARGE
     FILE_SIZE_EXCEEDED(HttpStatus.PAYLOAD_TOO_LARGE, "파일 크기가 제한을 초과했습니다."),
