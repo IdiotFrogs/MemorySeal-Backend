@@ -5,12 +5,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 public class BuryRequestDto {
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     @Schema(description = "타임캡슐 열리는 날짜")
-    private LocalDateTime openedAt;
+    private LocalDate openedAt;
 }

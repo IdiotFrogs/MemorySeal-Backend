@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Schema(
         description = "타임캡슐 정보 수정 응답 DTO",
-        requiredProperties = {"title", "description", "openedAt", "mainImageUrl"}
+        requiredProperties = {"title", "description", "mainImageUrl"}
 )
 public class TimeCapsuleUpdateResDto {
 
