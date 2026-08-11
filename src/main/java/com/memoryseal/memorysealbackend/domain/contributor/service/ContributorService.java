@@ -149,6 +149,7 @@ public class ContributorService {
                 .title(timeCapsule.getTitle())
                 .description(timeCapsule.getDescription())
                 .createdAt(timeCapsule.getCreatedAt())
+                .buriedAt(timeCapsule.getBuriedAt())
                 .openedAt(timeCapsule.getOpenedAt())
                 .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                 .timeCapsuleStatus(timeCapsule.getTimeCapsuleStatus())
