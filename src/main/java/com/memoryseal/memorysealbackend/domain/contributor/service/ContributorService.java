@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -111,13 +112,15 @@ public class ContributorService {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        if(openedAt.isBefore(LocalDate.now())) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        if(openedAt.isBefore(today)) {
             throw new AuthException(ErrorCode.INVALID_OPENED_AT);
         }
 
         timeCapsule.setOpenedAt(openedAt);
         timeCapsule.setTimeCapsuleStatus(TimeCapsuleStatus.BURIED);
-        timeCapsule.setBuriedAt(LocalDate.now());
+        timeCapsule.setBuriedAt(today);
 
         List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
         List<Long> userIds = contributors.stream()
