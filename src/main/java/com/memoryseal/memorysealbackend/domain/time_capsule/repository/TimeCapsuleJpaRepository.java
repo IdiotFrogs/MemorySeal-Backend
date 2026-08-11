@@ -5,6 +5,7 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleSt
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,9 +13,8 @@ import java.util.List;
 public interface TimeCapsuleJpaRepository extends JpaRepository<TimeCapsule, Long> {
     List<TimeCapsule> findByUserId(Long userId);
 
-    List<TimeCapsule> findByOpenedAtBetweenAndTimeCapsuleStatus(
-            LocalDateTime start,
-            LocalDateTime end,
+    List<TimeCapsule> findByOpenedAtAndTimeCapsuleStatus(
+            LocalDate openedAt,
             TimeCapsuleStatus status
     );
 

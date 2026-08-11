@@ -1,7 +1,6 @@
 package com.memoryseal.memorysealbackend.domain.contributor.service;
 
 import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.ContributorResponseDto;
-import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.PageResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
@@ -29,7 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -95,7 +94,7 @@ public class ContributorService {
     }
 
     @Transactional
-    public TimeCapsuleResponseDto buryCapsule(Long capsuleId, LocalDateTime openedAt) {
+    public TimeCapsuleResponseDto buryCapsule(Long capsuleId, LocalDate openedAt) {
         Long currentUserId = getCurrentUserId();
 
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
@@ -112,13 +111,13 @@ public class ContributorService {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        if(openedAt.isBefore(LocalDateTime.now())) {
+        if(openedAt.isBefore(LocalDate.now())) {
             throw new AuthException(ErrorCode.INVALID_OPENED_AT);
         }
 
         timeCapsule.setOpenedAt(openedAt);
         timeCapsule.setTimeCapsuleStatus(TimeCapsuleStatus.BURIED);
-        timeCapsule.setBuriedAt(LocalDateTime.now());
+        timeCapsule.setBuriedAt(LocalDate.now());
 
         List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
         List<Long> userIds = contributors.stream()
@@ -139,8 +138,8 @@ public class ContributorService {
                 .count();
 
         int myImageCount = (int) myContents.stream()
-                .flatMap(c -> c.getAttachedFiles().stream())
-                .count();
+                .mapToLong(c -> c.getAttachedFiles().size())
+                .sum();
 
 
         return TimeCapsuleResponseDto.builder()

@@ -95,14 +95,14 @@ public class WateringService {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        LocalDate buriedDate = timeCapsule.getBuriedAt().toLocalDate();
-        LocalDate openedDate = timeCapsule.getOpenedAt().toLocalDate();
+        LocalDate buriedDate = timeCapsule.getBuriedAt();
+        LocalDate openedDate = timeCapsule.getOpenedAt();
         long totalDays = ChronoUnit.DAYS.between(buriedDate, openedDate);
 
         long wateringCount = wateringJpaRepository.countByTimeCapsuleId(capsuleId);
 
         double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;
-        int stage = Math.min((int) (percentage / 25) + 1, 5);
+        int stage = Math.min((int) (percentage / 20) + 1, 5);
 
         List<TimeCapsuleWatering> allWaterings = wateringJpaRepository.findByTimeCapsuleId(capsuleId);
         Map<LocalDate, TimeCapsuleWatering> wateringMap = allWaterings.stream()
