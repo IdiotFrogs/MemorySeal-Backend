@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,14 +32,11 @@ public class TimeCapsuleScheduler {
 
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void sendOpenNotification() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
+        LocalDate today = LocalDate.now();
 
         List<TimeCapsule> capsules = timeCapsuleJpaRepository
-                .findByOpenedAtBetweenAndTimeCapsuleStatus(
-                        startOfDay,
-                        endOfDay,
+                .findByOpenedAtAndTimeCapsuleStatus(
+                        today,
                         TimeCapsuleStatus.BURIED
                 );
 
@@ -54,6 +52,7 @@ public class TimeCapsuleScheduler {
 
             Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
                     .collect(Collectors.toMap(User::getId, u -> u));
+
             userMap.values().forEach(user ->
                     fcmService.sendOpenedNotification(user.getFcmToken(),capsule.getTitle(), capsule.getId()));
         });

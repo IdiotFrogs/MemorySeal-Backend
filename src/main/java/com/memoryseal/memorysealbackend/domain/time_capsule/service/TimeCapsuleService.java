@@ -118,8 +118,8 @@ public class TimeCapsuleService {
                 .count();
 
         int myImageCount = (int) myContents.stream()
-                .flatMap(c -> c.getAttachedFiles().stream())
-                .count();
+                .mapToLong(c -> c.getAttachedFiles().size())
+                .sum();
 
         return TimeCapsuleResponseDto.builder()
                 .title(timeCapsule.getTitle())
@@ -165,8 +165,8 @@ public class TimeCapsuleService {
                     int stage = 0;
                     if(timeCapsule.getBuriedAt() != null && timeCapsule.getOpenedAt() != null) {
                         long totalDays = ChronoUnit.DAYS.between(
-                                timeCapsule.getBuriedAt().toLocalDate(),
-                                timeCapsule.getOpenedAt().toLocalDate()
+                                timeCapsule.getBuriedAt(),
+                                timeCapsule.getOpenedAt()
                         );
                         long wateringCount = wateringCountMap.getOrDefault(timeCapsule.getId(), 0L);
                         double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;

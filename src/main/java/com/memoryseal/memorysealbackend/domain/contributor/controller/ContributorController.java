@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -77,7 +78,7 @@ public class ContributorController {
     })
     @PutMapping("/{capsuleId}/bury")
     @Operation(summary = "타임캡슐 묻기")
-    public ResponseEntity<TimeCapsuleResponseDto> agreeBury(@PathVariable Long capsuleId, @RequestBody BuryRequestDto request) {
+    public ResponseEntity<TimeCapsuleResponseDto> agreeBury(@PathVariable Long capsuleId, @Valid @RequestBody BuryRequestDto request) {
         return ResponseEntity.ok(contributorService.buryCapsule(capsuleId, request.getOpenedAt()));
     }
 
