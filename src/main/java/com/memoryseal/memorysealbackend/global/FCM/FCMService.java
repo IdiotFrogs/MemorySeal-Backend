@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class FCMService {
     private final FirebaseMessaging firebaseMessaging;
 
-    private void sendNotification(String fcmToken, String title, String body, Long capsuleId, String type) {
+    private void sendNotification(String fcmToken, String title, String body, Long capsuleId, String action) {
         if(fcmToken == null) {
             return;
         }
@@ -26,7 +26,7 @@ public class FCMService {
                             .setBody(body)
                             .build())
                     .putData("capsuleId", String.valueOf(capsuleId))
-                    .putData("type", type)
+                    .putData("action", action)
                     .build();
             firebaseMessaging.send(message);
             log.info("푸시 알림 전송 성공: {}", fcmToken);
