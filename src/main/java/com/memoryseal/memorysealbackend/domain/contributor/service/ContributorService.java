@@ -114,7 +114,7 @@ public class ContributorService {
 
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
-        if(openedAt.isBefore(today)) {
+        if(!openedAt.isAfter(today)) {
             throw new AuthException(ErrorCode.INVALID_OPENED_AT);
         }
 
