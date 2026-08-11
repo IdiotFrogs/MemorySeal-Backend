@@ -123,9 +123,8 @@ public class InviteService {
     public void joinCapsule(Long capsuleId) {
         Long currentUserId = getCurrentUserId();
 
-        if(!timeCapsuleJpaRepository.existsById(capsuleId)) {
-            throw new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND);
-        }
+        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
 
         if(contributorJpaRepository.existsByTimeCapsuleIdAndUserId(capsuleId, currentUserId)) {
             throw new AuthException(ErrorCode.ALREADY_CONTRIBUTOR);
@@ -138,6 +137,21 @@ public class InviteService {
                 .build();
 
         contributorJpaRepository.save(contributor);
+
+        User joinUser = userJpaRepository.findById(currentUserId)
+                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+
+        List<Contributor> contributors = contributorJpaRepository.findByTimeCapsuleId(capsuleId);
+        List<Long> userIds = contributors.stream()
+                .map(Contributor::getUserId)
+                .filter(id -> !id.equals(currentUserId))
+                .toList();
+
+        Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u-> u));
+
+        userMap.values().forEach(user ->
+                fcmService.sendJoinRequestNotification(user.getFcmToken(), timeCapsule.getTitle(), joinUser.getNickname(), capsuleId));
     }
 
 }
