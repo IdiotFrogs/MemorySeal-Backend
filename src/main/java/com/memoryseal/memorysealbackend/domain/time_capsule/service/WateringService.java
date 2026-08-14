@@ -119,7 +119,7 @@ public class WateringService {
         LocalDate today = LocalDate.now();
         LocalDate endDate = today.isBefore(openedDate) ? today : openedDate;
 
-        List<LocalDate> allDates = buriedDate.datesUntil(endDate.plusDays(1))
+        List<LocalDate> allDates = buriedDate.datesUntil(endDate)
                 .toList();
 
         int start = (int) pageable.getOffset();
@@ -187,7 +187,7 @@ public class WateringService {
                 .collect(Collectors.toMap(User::getId, u -> u));
 
 
-        List<LocalDate> allDates = buriedDate.datesUntil(openedDate.plusDays(1))
+        List<LocalDate> allDates = buriedDate.datesUntil(openedDate)
                 .toList();
 
         int start = (int) pageable.getOffset();
