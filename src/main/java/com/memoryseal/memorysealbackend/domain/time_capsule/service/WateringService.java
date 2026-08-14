@@ -155,4 +155,72 @@ public class WateringService {
                 .build();
     }
 
+    public WateringResponseDto getAllWatering(Long capsuleId, Pageable pageable) {
+        Long currentUserId = getCurrentUserId();
+
+        TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
+                .orElseThrow(() -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND));
+
+        if(!contributorJpaRepository.existsByTimeCapsuleIdAndUserId(capsuleId, currentUserId)) {
+            throw new AuthException(ErrorCode.ACCESS_DENIED);
+        }
+
+        LocalDate buriedDate = timeCapsule.getBuriedAt();
+        LocalDate openedDate = timeCapsule.getOpenedAt();
+        long totalDays = ChronoUnit.DAYS.between(buriedDate, openedDate);
+
+        long wateringCount = wateringJpaRepository.countByTimeCapsuleId(capsuleId);
+
+        double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;
+        int stage = Math.min((int) (percentage / 20) + 1, 5);
+
+        List<TimeCapsuleWatering> allWaterings = wateringJpaRepository.findByTimeCapsuleId(capsuleId);
+        Map<LocalDate, TimeCapsuleWatering> wateringMap = allWaterings.stream()
+                .collect(Collectors.toMap(TimeCapsuleWatering::getWateredDate, w -> w));
+
+        List<Long> userIds = allWaterings.stream()
+                .map(TimeCapsuleWatering::getUserId)
+                .distinct()
+                .toList();
+
+        Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+
+        List<LocalDate> allDates = buriedDate.datesUntil(openedDate.plusDays(1))
+                .toList();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), allDates.size());
+        List<LocalDate> pagedDates = start >= allDates.size() ? List.of() : allDates.subList(start, end);
+
+        List<WateringDto> wateringDtos = pagedDates.stream()
+                .map(date -> {
+                    TimeCapsuleWatering watering = wateringMap.get(date);
+                    if(watering == null) {
+                        return WateringDto.builder()
+                                .wateredDate(date)
+                                .isWatered(false)
+                                .build();
+                    }
+                    User user = userMap.get(watering.getUserId());
+                    return WateringDto.builder()
+                            .wateredDate(date)
+                            .isWatered(true)
+                            .userId(user.getId())
+                            .profileImageUrl(user.getProfileImage() != null ? user.getProfileImage().getFileUrl() : null)
+                            .build();
+                })
+                .toList();
+
+        Page<WateringDto> page = new PageImpl<>(wateringDtos, pageable, allDates.size());
+
+        return WateringResponseDto.builder()
+                .totalDays(totalDays)
+                .wateringCount(wateringCount)
+                .stage(stage)
+                .waterings(new PageResponseDto<>(page))
+                .build();
+    }
+
 }
