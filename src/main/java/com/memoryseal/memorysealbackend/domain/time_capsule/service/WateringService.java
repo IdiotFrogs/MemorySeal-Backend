@@ -85,7 +85,7 @@ public class WateringService {
                         .build());
     }
 
-    public WateringResponseDto getWatering(Long capsuleId, Pageable pageable) {
+    public WateringResponseDto getWatering(Long capsuleId, Pageable pageable, String sort) {
         Long currentUserId = getCurrentUserId();
 
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(capsuleId)
@@ -119,8 +119,16 @@ public class WateringService {
         LocalDate today = LocalDate.now();
         LocalDate endDate = today.isBefore(openedDate) ? today : openedDate;
 
-        List<LocalDate> allDates = buriedDate.datesUntil(endDate)
-                .toList();
+        List<LocalDate> allDates;
+        if("asc".equalsIgnoreCase(sort)) {
+            allDates = buriedDate.datesUntil(endDate).toList();
+        }else if ("desc".equalsIgnoreCase(sort)) {
+            allDates = buriedDate.datesUntil(endDate)
+                    .sorted(Comparator.reverseOrder())
+                    .toList();
+        }else {
+            throw new AuthException(ErrorCode.INVALID_SORT_DIRECTION);
+        }
 
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), allDates.size());

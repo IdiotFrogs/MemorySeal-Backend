@@ -23,6 +23,7 @@ public enum ErrorCode {
     FILE_IDS_REQUIRED(HttpStatus.BAD_REQUEST, "삭제할 파일 ID를 입력하세요."),
     INVALID_FCM_TOKEN(HttpStatus.BAD_REQUEST, "유효하지 않은 FCM 토큰입니다."),
     NOT_TIMECAPSULE_BURIED(HttpStatus.BAD_REQUEST, "묻힌 상태의 타임캡슐이 아닙니다."),
+    INVALID_SORT_DIRECTION(HttpStatus.BAD_REQUEST, "정렬 방향은 asc 또는 desc만 가능합니다."),
 
     // 401 UnAuthorized
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),

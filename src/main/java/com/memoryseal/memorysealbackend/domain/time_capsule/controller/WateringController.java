@@ -29,9 +29,10 @@ public class WateringController {
     public ResponseEntity<WateringResponseDto> getWatering(
             @PathVariable Long capsuleId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "6") int size
+            @RequestParam(defaultValue = "6") int size,
+            @RequestParam(defaultValue = "desc") String sort
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(wateringService.getWatering(capsuleId, pageable));
+        return ResponseEntity.ok(wateringService.getWatering(capsuleId, pageable, sort));
     }
 }
