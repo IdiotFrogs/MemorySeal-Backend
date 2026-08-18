@@ -68,12 +68,13 @@ public class TimeCapsuleService {
         log.info("타임캡슐 생성 시작 - 유저 ID: {}", currentUserId);
 
         try{
+            LocalDate today = LocalDate.now();
             TimeCapsule timeCapsule = TimeCapsule.builder()
                     .title(timeCapsuleCreateDto.getTitle())
                     .description(timeCapsuleCreateDto.getDescription())
                     .timeCapsuleStatus(TimeCapsuleStatus.BEFOREBURIED)
-                    .createdAt(LocalDate.now())
-                    .updatedAt(LocalDate.now())
+                    .createdAt(today)
+                    .updatedAt(today)
                     .timeCapsuleActiveStatus(true)
                     .userId(currentUserId)
                     .build();
