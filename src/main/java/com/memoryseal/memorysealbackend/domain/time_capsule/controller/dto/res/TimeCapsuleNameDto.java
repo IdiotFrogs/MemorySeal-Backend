@@ -10,7 +10,6 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -33,9 +32,9 @@ public class TimeCapsuleNameDto {
     private LocalDate openedAt;
 
     @Schema(description = "타임캡슐 생성 날짜")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
-    private LocalDateTime createdAt;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    private LocalDate createdAt;
 
     @Schema(description = "타임캡슐 대표 이미지 URL")
     private String mainImageUrl;

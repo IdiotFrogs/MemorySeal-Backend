@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
@@ -72,8 +72,8 @@ public class TimeCapsuleService {
                     .title(timeCapsuleCreateDto.getTitle())
                     .description(timeCapsuleCreateDto.getDescription())
                     .timeCapsuleStatus(TimeCapsuleStatus.BEFOREBURIED)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
+                    .createdAt(LocalDate.now())
+                    .updatedAt(LocalDate.now())
                     .timeCapsuleActiveStatus(true)
                     .userId(currentUserId)
                     .build();
@@ -210,7 +210,7 @@ public class TimeCapsuleService {
             }
         }
 
-        timeCapsule.setUpdatedAt(LocalDateTime.now());
+        timeCapsule.setUpdatedAt(LocalDate.now());
 
         if(mainImage != null && !mainImage.isEmpty()) {
             log.info("이미지 업로드 시도: {}", mainImage.getOriginalFilename());
