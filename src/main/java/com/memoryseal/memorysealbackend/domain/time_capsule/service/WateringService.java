@@ -117,13 +117,13 @@ public class WateringService {
                 .collect(Collectors.toMap(User::getId, u -> u));
 
         LocalDate today = LocalDate.now();
-        LocalDate endDate = today.isBefore(openedDate) ? today : openedDate;
+        LocalDate endDate = today.isBefore(openedDate) ? today : openedDate.minusDays(1);
 
         List<LocalDate> allDates;
         if("asc".equalsIgnoreCase(sort)) {
-            allDates = buriedDate.datesUntil(endDate).toList();
+            allDates = buriedDate.datesUntil(endDate.plusDays(1)).toList();
         }else if ("desc".equalsIgnoreCase(sort)) {
-            allDates = buriedDate.datesUntil(endDate)
+            allDates = buriedDate.datesUntil(endDate.plusDays(1))
                     .sorted(Comparator.reverseOrder())
                     .toList();
         }else {
