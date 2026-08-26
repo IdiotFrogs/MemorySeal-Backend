@@ -34,7 +34,7 @@ public class TimeCapsuleContentController {
     private final TimeCapsuleContentService timeCapsuleContentService;
 
     @PostMapping(value = "/{timeCapsuleId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "타임캡슐 내용 생성", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(required = false))
+    @Operation(summary = "타임캡슐 내용 생성")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "성공"),
             @ApiResponse(responseCode = "400", description = "1. 내용 또는 파일 중 적어도 하나는 포함되어야 함 \t\n 2. 지원하지 않는 파일 형식 \t\n 3. 업로드할 파일이 없음",
