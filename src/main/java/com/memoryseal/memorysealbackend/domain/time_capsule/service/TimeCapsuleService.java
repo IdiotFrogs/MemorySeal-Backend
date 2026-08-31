@@ -163,7 +163,11 @@ public class TimeCapsuleService {
         Map<Long, TimeCapsule> timeCapsuleMap = timeCapsules.stream()
                 .collect(Collectors.toMap(TimeCapsule::getId, t -> t));
 
-        Map<Long, Long> wateringCountMap = wateringJpaRepository.countByTimeCapsuleIdIn(timeCapsuleIds).stream()
+        List<Long> filteredTimeCapsuleIds = timeCapsules.stream()
+                .map(TimeCapsule::getId)
+                .toList();
+
+        Map<Long, Long> wateringCountMap = wateringJpaRepository.countByTimeCapsuleIdIn(filteredTimeCapsuleIds).stream()
                 .collect(Collectors.toMap(
                         row -> (Long) row[0],
                         row -> (Long) row[1]
