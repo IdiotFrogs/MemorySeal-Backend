@@ -2,6 +2,7 @@ package com.memoryseal.memorysealbackend.domain.invite.controller;
 
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.req.InviteRequestDto;
 import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.InviteResponseDto;
+import com.memoryseal.memorysealbackend.domain.invite.controller.dto.res.JoinResponseDto;
 import com.memoryseal.memorysealbackend.domain.invite.service.InviteService;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.service.TimeCapsuleService;
@@ -64,10 +65,10 @@ public class InviteController {
                     examples = @ExampleObject(name = "이미 등록 완료된 사용자", value = "{\"status\": \"409\", \"error\": \"ALREADY_CONTRIBUTOR\", \"message\": \"이미 공동작업자로 등록이 완료된 사용자입니다.\", \"path\": \"/time-capsules/join-request\"}")))
     })
     @PostMapping("/time-capsules/join-request")
-    public ResponseEntity<Void> submitContributorRequest(
+    public ResponseEntity<JoinResponseDto> submitContributorRequest(
             @RequestBody final InviteRequestDto requestDto) {
-        inviteService.submitContributorRequest(requestDto.getCode());
-        return ResponseEntity.ok().build();
+        Long capsuleId = inviteService.submitContributorRequest(requestDto.getCode());
+        return ResponseEntity.ok(JoinResponseDto.builder().capsuleId(capsuleId).build());
     }
 
     @Operation(summary = "초대 링크를 통한 타임캡슐 참가")

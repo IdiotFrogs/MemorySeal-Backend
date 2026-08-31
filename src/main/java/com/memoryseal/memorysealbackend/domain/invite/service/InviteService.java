@@ -81,7 +81,7 @@ public class InviteService {
     }
 
     @Transactional
-    public void submitContributorRequest(final String inviteCode) {
+    public Long submitContributorRequest(final String inviteCode) {
         Long currentUserId = getCurrentUserId();
 
         Long capsuleId = redisUtil.getData("code=" + inviteCode, Long.class)
@@ -117,6 +117,8 @@ public class InviteService {
 
         userMap.values().forEach(user ->
                 fcmService.sendJoinRequestNotification(user.getFcmToken(), timeCapsule.getTitle(), joinUser.getNickname(), capsuleId));
+
+        return capsuleId;
     }
 
     @Transactional
