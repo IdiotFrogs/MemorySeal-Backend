@@ -1,11 +1,13 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller;
 
+import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleCreateResDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleNameDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleUpdateResDto;
+import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.service.TimeCapsuleService;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -128,8 +130,13 @@ public class TimeCapsuleController {
                     examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/my\"}")))
     })
     @GetMapping("/my")
-    public ResponseEntity<List<TimeCapsuleNameDto>> getMyTimeCapsule() {
-        List<TimeCapsuleNameDto> myTimeCapsule = timeCapsuleService.getTimeCapsule();
+    public ResponseEntity<List<TimeCapsuleNameDto>> getMyTimeCapsule(
+            @Parameter(description = "공동작업자 역할", required = false)
+            @RequestParam(required = false) ContributorRole role,
+            @Parameter(description = "타임캡슐 상태", required = false)
+            @RequestParam(required = false) TimeCapsuleStatus status
+            ) {
+        List<TimeCapsuleNameDto> myTimeCapsule = timeCapsuleService.getTimeCapsule(role, status);
         return ResponseEntity.ok(myTimeCapsule);
     }
 

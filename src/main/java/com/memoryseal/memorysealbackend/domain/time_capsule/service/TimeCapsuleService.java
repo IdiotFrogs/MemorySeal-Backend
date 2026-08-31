@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -136,16 +137,28 @@ public class TimeCapsuleService {
                 .build();
     }
 
-    public List<TimeCapsuleNameDto> getTimeCapsule() {
+    public List<TimeCapsuleNameDto> getTimeCapsule(ContributorRole role, TimeCapsuleStatus status) {
         Long currentUserId = getCurrentUserId();
 
-        List<Contributor> contributors = contributorJpaRepository.findByUserId(currentUserId);
+        List<Contributor> contributors = (role != null)
+                ? contributorJpaRepository.findByUserIdAndContributorRole(currentUserId, role)
+                : contributorJpaRepository.findByUserId(currentUserId);
+
+        if(contributors.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         List<Long> timeCapsuleIds = contributors.stream()
                 .map(Contributor::getTimeCapsuleId)
                 .toList();
 
-        List<TimeCapsule> timeCapsules = timeCapsuleJpaRepository.findAllById(timeCapsuleIds);
+        List<TimeCapsule> timeCapsules = (status != null)
+                ? timeCapsuleJpaRepository.findByIdInAndTimeCapsuleStatus(timeCapsuleIds, status)
+                : timeCapsuleJpaRepository.findAllById(timeCapsuleIds);
+
+        if(timeCapsules.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         Map<Long, TimeCapsule> timeCapsuleMap = timeCapsules.stream()
                 .collect(Collectors.toMap(TimeCapsule::getId, t -> t));
@@ -157,6 +170,7 @@ public class TimeCapsuleService {
                 ));
 
         return contributors.stream()
+                .filter(c -> timeCapsuleMap.containsKey(c.getTimeCapsuleId()))
                 .map(contributor -> {
                     TimeCapsule timeCapsule = timeCapsuleMap.get(contributor.getTimeCapsuleId());
                     if(timeCapsule == null) {

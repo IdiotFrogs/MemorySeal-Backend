@@ -18,4 +18,9 @@ public interface TimeCapsuleJpaRepository extends JpaRepository<TimeCapsule, Lon
             TimeCapsuleStatus status
     );
 
+    List<TimeCapsule> findByIdInAndTimeCapsuleStatus(
+            List<Long> ids,
+            TimeCapsuleStatus timeCapsuleStatus
+    );
+
 }
