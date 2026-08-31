@@ -16,6 +16,8 @@ public interface ContributorJpaRepository extends JpaRepository<Contributor, Lon
 
     List<Contributor> findByUserId(Long userId);
 
+    List<Contributor> findByUserIdAndContributorRole(Long userId, ContributorRole role);
+
     Optional<Contributor> findByUserIdAndTimeCapsuleId(Long userId, Long timeCapsuleId);
 
     Optional<Contributor> findByTimeCapsuleIdAndContributorRole(Long timeCapsuleId, ContributorRole role);

@@ -155,7 +155,7 @@ public class ContributorController {
             @PathVariable Long capsuleId,
             @RequestParam(required = false) String nickname,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(new PageResponseDto<>(contributorService.searchByNickname(capsuleId, nickname, pageable)));
