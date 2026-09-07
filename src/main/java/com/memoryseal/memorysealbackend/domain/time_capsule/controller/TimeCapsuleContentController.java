@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -112,8 +114,8 @@ public class TimeCapsuleContentController {
     @GetMapping("/{timeCapsuleId}/contents")
     public ResponseEntity<PageResponseDto<UserContentDto>> getContents(
             @PathVariable Long timeCapsuleId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(timeCapsuleContentService.getContent(timeCapsuleId, pageable));

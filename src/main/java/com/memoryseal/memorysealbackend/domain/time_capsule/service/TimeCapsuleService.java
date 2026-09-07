@@ -140,7 +140,7 @@ public class TimeCapsuleService {
                 .build();
     }
 
-    public Page<TimeCapsuleNameDto> getTimeCapsule(TimeCapsuleStatus status, Pageable pageable) {
+    public Page<TimeCapsuleNameDto> getMyTimeCapsule(TimeCapsuleStatus status, Pageable pageable) {
         Long currentUserId = getCurrentUserId();
 
         List<Contributor> contributors = contributorJpaRepository.findByUserId(currentUserId);

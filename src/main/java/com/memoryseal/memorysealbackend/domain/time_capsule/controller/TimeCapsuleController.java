@@ -20,6 +20,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -136,11 +138,11 @@ public class TimeCapsuleController {
     public ResponseEntity<PageResponseDto<TimeCapsuleNameDto>> getMyTimeCapsule(
             @Parameter(description = "타임캡슐 상태", required = false)
             @RequestParam(required = false) TimeCapsuleStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "6") int size
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "6") @Min(1) @Max(50) int size
             ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(new PageResponseDto<>(timeCapsuleService.getTimeCapsule(status, pageable)));
+        return ResponseEntity.ok(new PageResponseDto<>(timeCapsuleService.getMyTimeCapsule(status, pageable)));
     }
 
     @Operation(summary = "타임캡슐 삭제")
