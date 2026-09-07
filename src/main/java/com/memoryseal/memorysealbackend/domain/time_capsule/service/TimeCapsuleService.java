@@ -18,6 +18,9 @@ import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -137,13 +140,13 @@ public class TimeCapsuleService {
                 .build();
     }
 
-    public List<TimeCapsuleNameDto> getTimeCapsule(TimeCapsuleStatus status) {
+    public Page<TimeCapsuleNameDto> getTimeCapsule(TimeCapsuleStatus status, Pageable pageable) {
         Long currentUserId = getCurrentUserId();
 
         List<Contributor> contributors = contributorJpaRepository.findByUserId(currentUserId);
 
         if(contributors.isEmpty()) {
-            return Collections.emptyList();
+            return Page.empty(pageable);
         }
 
         List<Long> timeCapsuleIds = contributors.stream()
@@ -155,7 +158,7 @@ public class TimeCapsuleService {
                 : timeCapsuleJpaRepository.findAllById(timeCapsuleIds);
 
         if(timeCapsules.isEmpty()) {
-            return Collections.emptyList();
+            return Page.empty(pageable);
         }
 
         Map<Long, TimeCapsule> timeCapsuleMap = timeCapsules.stream()
@@ -171,7 +174,7 @@ public class TimeCapsuleService {
                         row -> (Long) row[1]
                 ));
 
-        return contributors.stream()
+        List<TimeCapsuleNameDto> filteredAndSortedList = contributors.stream()
                 .filter(c -> timeCapsuleMap.containsKey(c.getTimeCapsuleId()))
                 .map(contributor -> {
                     TimeCapsule timeCapsule = timeCapsuleMap.get(contributor.getTimeCapsuleId());
@@ -202,7 +205,17 @@ public class TimeCapsuleService {
                             .build();
                 })
                 .sorted(Comparator.comparing(TimeCapsuleNameDto::getCreatedAt).reversed())
-                .collect(toList());
+                .toList();
+
+        int start = (int) pageable.getOffset();
+        if(start >= filteredAndSortedList.size()) {
+            return new PageImpl<>(List.of(), pageable, filteredAndSortedList.size());
+        }
+        int end = Math.min(start + pageable.getPageSize(), filteredAndSortedList.size());
+
+        List<TimeCapsuleNameDto> pageContent = filteredAndSortedList.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, filteredAndSortedList.size());
     }
 
     @Transactional
