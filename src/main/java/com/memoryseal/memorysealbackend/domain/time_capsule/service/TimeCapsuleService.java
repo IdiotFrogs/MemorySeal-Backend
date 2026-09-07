@@ -207,11 +207,12 @@ public class TimeCapsuleService {
                 .sorted(Comparator.comparing(TimeCapsuleNameDto::getCreatedAt).reversed())
                 .toList();
 
-        int start = (int) pageable.getOffset();
-        if(start >= filteredAndSortedList.size()) {
+        long offset = pageable.getOffset();
+        if(offset >= filteredAndSortedList.size()) {
             return new PageImpl<>(List.of(), pageable, filteredAndSortedList.size());
         }
-        int end = Math.min(start + pageable.getPageSize(), filteredAndSortedList.size());
+        int start = Math.toIntExact(offset);
+        int end = (int) Math.min(offset + (long) pageable.getPageSize(), filteredAndSortedList.size());
 
         List<TimeCapsuleNameDto> pageContent = filteredAndSortedList.subList(start, end);
 
