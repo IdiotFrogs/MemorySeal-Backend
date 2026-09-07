@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,8 +51,8 @@ public class ContributorController {
     public ResponseEntity<PageResponseDto<ContributorResponseDto>> getDetail(
             @Parameter(description = "타임캡슐 ID", required = true)
             @PathVariable Long capsuleId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(new PageResponseDto<>(contributorService.getDetail(capsuleId, pageable)));
     }
@@ -154,8 +156,8 @@ public class ContributorController {
     public ResponseEntity<PageResponseDto<ContributorResponseDto>> searchByNickname(
             @PathVariable Long capsuleId,
             @RequestParam(required = false) String nickname,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(new PageResponseDto<>(contributorService.searchByNickname(capsuleId, nickname, pageable)));

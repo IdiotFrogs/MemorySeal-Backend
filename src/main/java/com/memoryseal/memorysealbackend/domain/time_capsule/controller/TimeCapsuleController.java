@@ -1,5 +1,6 @@
 package com.memoryseal.memorysealbackend.domain.time_capsule.controller;
 
+import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.PageResponseDto;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
@@ -19,8 +20,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -130,14 +135,14 @@ public class TimeCapsuleController {
                     examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/my\"}")))
     })
     @GetMapping("/my")
-    public ResponseEntity<List<TimeCapsuleNameDto>> getMyTimeCapsule(
-            @Parameter(description = "공동작업자 역할", required = false)
-            @RequestParam(required = false) ContributorRole role,
+    public ResponseEntity<PageResponseDto<TimeCapsuleNameDto>> getMyTimeCapsule(
             @Parameter(description = "타임캡슐 상태", required = false)
-            @RequestParam(required = false) TimeCapsuleStatus status
+            @RequestParam(required = false) TimeCapsuleStatus status,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "6") @Min(1) @Max(50) int size
             ) {
-        List<TimeCapsuleNameDto> myTimeCapsule = timeCapsuleService.getTimeCapsule(role, status);
-        return ResponseEntity.ok(myTimeCapsule);
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(new PageResponseDto<>(timeCapsuleService.getMyTimeCapsule(status, pageable)));
     }
 
     @Operation(summary = "타임캡슐 삭제")

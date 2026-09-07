@@ -7,6 +7,8 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.service.WateringServ
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.global.error.ErrorCode;
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -64,8 +66,8 @@ public class WateringTestController {
     @GetMapping("/{capsuleId}")
     public ResponseEntity<WateringResponseDto> getAllWatering(
             @PathVariable Long capsuleId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(wateringService.getAllWatering(capsuleId, pageable));
