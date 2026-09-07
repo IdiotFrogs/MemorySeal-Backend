@@ -131,12 +131,10 @@ public class TimeCapsuleController {
     })
     @GetMapping("/my")
     public ResponseEntity<List<TimeCapsuleNameDto>> getMyTimeCapsule(
-            @Parameter(description = "공동작업자 역할", required = false)
-            @RequestParam(required = false) ContributorRole role,
             @Parameter(description = "타임캡슐 상태", required = false)
             @RequestParam(required = false) TimeCapsuleStatus status
             ) {
-        List<TimeCapsuleNameDto> myTimeCapsule = timeCapsuleService.getTimeCapsule(role, status);
+        List<TimeCapsuleNameDto> myTimeCapsule = timeCapsuleService.getTimeCapsule(status);
         return ResponseEntity.ok(myTimeCapsule);
     }
 

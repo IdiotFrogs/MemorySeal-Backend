@@ -137,12 +137,10 @@ public class TimeCapsuleService {
                 .build();
     }
 
-    public List<TimeCapsuleNameDto> getTimeCapsule(ContributorRole role, TimeCapsuleStatus status) {
+    public List<TimeCapsuleNameDto> getTimeCapsule(TimeCapsuleStatus status) {
         Long currentUserId = getCurrentUserId();
 
-        List<Contributor> contributors = (role != null)
-                ? contributorJpaRepository.findByUserIdAndContributorRole(currentUserId, role)
-                : contributorJpaRepository.findByUserId(currentUserId);
+        List<Contributor> contributors = contributorJpaRepository.findByUserId(currentUserId);
 
         if(contributors.isEmpty()) {
             return Collections.emptyList();
