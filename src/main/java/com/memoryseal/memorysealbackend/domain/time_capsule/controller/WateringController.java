@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/time-capsules")
 @RequiredArgsConstructor
 @Tag(name = "Watering")
-@Validated
 public class WateringController {
     private final WateringService wateringService;
 
@@ -32,8 +31,8 @@ public class WateringController {
     @GetMapping("/{capsuleId}/water")
     public ResponseEntity<WateringResponseDto> getWatering(
             @PathVariable Long capsuleId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "6") @Min(1) @Max(50) int size,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size,
             @RequestParam(defaultValue = "desc") String sort
     ) {
         Pageable pageable = PageRequest.of(page, size);

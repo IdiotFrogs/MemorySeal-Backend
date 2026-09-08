@@ -41,7 +41,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping(value = "/time-capsules")
 @Tag(name = "Time Capsule")
-@Validated
 public class TimeCapsuleController {
 
     private final TimeCapsuleService timeCapsuleService;
@@ -140,8 +139,8 @@ public class TimeCapsuleController {
     public ResponseEntity<PageResponseDto<TimeCapsuleNameDto>> getMyTimeCapsule(
             @Parameter(description = "타임캡슐 상태", required = false)
             @RequestParam(required = false) TimeCapsuleStatus status,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "6") @Min(1) @Max(50) int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
             ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(new PageResponseDto<>(timeCapsuleService.getMyTimeCapsule(status, pageable)));

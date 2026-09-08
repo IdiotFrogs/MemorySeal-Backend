@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping(value = "/time-capsules")
 @Tag(name = "Contributor")
-@Validated
 public class ContributorController {
 
     private final ContributorService contributorService;
@@ -53,8 +52,8 @@ public class ContributorController {
     public ResponseEntity<PageResponseDto<ContributorResponseDto>> getDetail(
             @Parameter(description = "타임캡슐 ID", required = true)
             @PathVariable Long capsuleId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(new PageResponseDto<>(contributorService.getDetail(capsuleId, pageable)));
     }
@@ -158,8 +157,8 @@ public class ContributorController {
     public ResponseEntity<PageResponseDto<ContributorResponseDto>> searchByNickname(
             @PathVariable Long capsuleId,
             @RequestParam(required = false) String nickname,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(new PageResponseDto<>(contributorService.searchByNickname(capsuleId, nickname, pageable)));

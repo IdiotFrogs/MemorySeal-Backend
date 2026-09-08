@@ -27,7 +27,6 @@ import java.util.List;
 @RequestMapping("dev/water")
 @RequiredArgsConstructor
 @Slf4j
-@Validated
 public class WateringTestController {
 
     private final WateringJpaRepository wateringJpaRepository;
@@ -68,8 +67,8 @@ public class WateringTestController {
     @GetMapping("/{capsuleId}")
     public ResponseEntity<WateringResponseDto> getAllWatering(
             @PathVariable Long capsuleId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(wateringService.getAllWatering(capsuleId, pageable));

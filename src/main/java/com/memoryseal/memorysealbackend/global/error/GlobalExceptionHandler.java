@@ -43,12 +43,6 @@ public class GlobalExceptionHandler {
         return ErrorResponse.toResponseEntity(ErrorCode.INVALID_PARAMETER, request.getRequestURI());
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    protected ResponseEntity<ErrorResponse> handleConstraintViolationException(
-            ConstraintViolationException e, HttpServletRequest request) {
-        return ErrorResponse.toResponseEntity(ErrorCode.INVALID_PARAMETER, request.getRequestURI());
-    }
-
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
         log.error("INTERNAL SERVER ERROR: {}", e.getMessage(), e);
