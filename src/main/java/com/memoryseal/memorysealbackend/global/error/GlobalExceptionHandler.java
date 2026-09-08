@@ -2,6 +2,7 @@ package com.memoryseal.memorysealbackend.global.error;
 
 import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -39,6 +40,12 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException e, HttpServletRequest request
     ) {
         log.error("VALIDATION ERROR: {}", e.getMessage());
+        return ErrorResponse.toResponseEntity(ErrorCode.INVALID_PARAMETER, request.getRequestURI());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    protected ResponseEntity<ErrorResponse> handleConstraintViolationException(
+            ConstraintViolationException e, HttpServletRequest request) {
         return ErrorResponse.toResponseEntity(ErrorCode.INVALID_PARAMETER, request.getRequestURI());
     }
 

@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -135,6 +136,7 @@ public class TimeCapsuleController {
                     examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"TIMECAPSULE_NOT_FOUND\", \"message\": \"타임캡슐을 찾을 수 없습니다.\", \"path\": \"/time-capsules/my\"}")))
     })
     @GetMapping("/my")
+    @Validated
     public ResponseEntity<PageResponseDto<TimeCapsuleNameDto>> getMyTimeCapsule(
             @Parameter(description = "타임캡슐 상태", required = false)
             @RequestParam(required = false) TimeCapsuleStatus status,
