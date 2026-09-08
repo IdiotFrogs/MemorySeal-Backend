@@ -21,12 +21,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/time-capsules")
 @Tag(name = "Contributor")
+@Validated
 public class ContributorController {
 
     private final ContributorService contributorService;
