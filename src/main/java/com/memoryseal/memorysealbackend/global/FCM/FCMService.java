@@ -47,4 +47,7 @@ public class FCMService {
     public void sendJoinRequestNotification(String fcmToken, String title, String nickname, Long capsuleId) {
         sendNotification(fcmToken, "타임 티켓 참가", title + "티켓에 " + nickname + "님이 참가했어요!", capsuleId, "member");
     }
+    public void sendSeasonalNotification(String fcmToken, Long userId, Long capsuleId, String seasonContent) {
+        sendNotification(fcmToken, "계절 알림", seasonContent, capsuleId, "season");
+    }
 }
