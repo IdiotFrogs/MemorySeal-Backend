@@ -32,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Comparator;
@@ -76,7 +77,7 @@ public class TimeCapsuleService {
         log.info("타임캡슐 생성 시작 - 유저 ID: {}", currentUserId);
 
         try{
-            LocalDate today = LocalDate.now();
+            LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
             TimeCapsule timeCapsule = TimeCapsule.builder()
                     .title(timeCapsuleCreateDto.getTitle())
                     .description(timeCapsuleCreateDto.getDescription())
@@ -149,7 +150,7 @@ public class TimeCapsuleService {
 
     @Transactional
     public void confirmIfMatches(Long userId, Long capsuleId) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         Season currentSeason = Season.from(today.getMonthValue());
         int currentYear = today.getYear();
 
@@ -260,7 +261,7 @@ public class TimeCapsuleService {
             }
         }
 
-        timeCapsule.setUpdatedAt(LocalDate.now());
+        timeCapsule.setUpdatedAt(LocalDate.now(ZoneId.of("Asia/Seoul")));
 
         if(mainImage != null && !mainImage.isEmpty()) {
             log.info("이미지 업로드 시도: {}", mainImage.getOriginalFilename());

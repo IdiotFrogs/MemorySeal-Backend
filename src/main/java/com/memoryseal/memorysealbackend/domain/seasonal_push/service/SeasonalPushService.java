@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class SeasonalPushService {
     private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
 
     public SeasonalBannerResponse getSeasonalBanner(Long userId) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         Season currentSeason = Season.from(today.getMonthValue());
         int currentYear = today.getYear();
 

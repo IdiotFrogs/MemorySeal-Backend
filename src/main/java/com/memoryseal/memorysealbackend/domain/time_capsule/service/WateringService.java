@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
@@ -73,7 +74,7 @@ public class WateringService {
             throw new AuthException(ErrorCode.ACCESS_DENIED);
         }
 
-        if(wateringJpaRepository.existsByTimeCapsuleIdAndWateredDate(capsuleId, LocalDate.now())) {
+        if(wateringJpaRepository.existsByTimeCapsuleIdAndWateredDate(capsuleId, LocalDate.now(ZoneId.of("Asia/Seoul")))) {
             throw new AuthException(ErrorCode.ALREADY_WATERED);
         }
 
@@ -81,7 +82,7 @@ public class WateringService {
                 TimeCapsuleWatering.builder()
                         .timeCapsuleId(capsuleId)
                         .userId(currentUserId)
-                        .wateredDate(LocalDate.now())
+                        .wateredDate(LocalDate.now(ZoneId.of("Asia/Seoul")))
                         .build());
     }
 
@@ -116,7 +117,7 @@ public class WateringService {
         Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         LocalDate endDate = today.isBefore(openedDate) ? today : openedDate.minusDays(1);
 
         List<LocalDate> allDates;

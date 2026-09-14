@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Getter
@@ -38,6 +39,6 @@ public class SeasonalPush {
     private LocalDateTime confirmedAt;
 
     public void confirm() {
-        this.confirmedAt = LocalDateTime.now();
+        this.confirmedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
     }
 }

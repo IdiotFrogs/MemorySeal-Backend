@@ -20,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class WateringTestController {
             waterings.add(TimeCapsuleWatering.builder()
                     .timeCapsuleId(capsuleId)
                     .userId(currentUserId)
-                    .wateredDate(LocalDate.now().plusDays(i))
+                    .wateredDate(LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(i))
                     .build());
         }
         wateringJpaRepository.saveAll(waterings);

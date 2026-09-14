@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,7 @@ public class SeasonalPushScheduler {
     @Transactional
     @Scheduled(cron = "0 0 0 1 3,6,9,12 *", zone = "Asia/Seoul")
     public void sendSeasonalPush() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         Season currentSeason = Season.from(today.getMonthValue());
         int currentYear = today.getYear();
 
@@ -77,7 +78,7 @@ public class SeasonalPushScheduler {
                     .season(currentSeason)
                     .year(currentYear)
                     .timeCapsuleId(selected.getId())
-                    .sentAt(LocalDateTime.now())
+                    .sentAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                     .build());
         });
         pushJpaRepository.saveAll(save);
