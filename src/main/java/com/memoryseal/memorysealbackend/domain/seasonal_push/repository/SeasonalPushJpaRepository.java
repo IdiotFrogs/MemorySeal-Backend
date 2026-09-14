@@ -19,5 +19,5 @@ public interface SeasonalPushJpaRepository extends JpaRepository<SeasonalPush, L
     Set<Long> findAlreadySentUserIds(@Param("season") Season season,
                                      @Param("year") Integer year);
 
-    Optional<SeasonalPush> findByUserIdAndSeason(Long userId, Season season);
+    Optional<SeasonalPush> findByUserIdAndSeasonAndYear(Long userId, Season season, int year);
 }

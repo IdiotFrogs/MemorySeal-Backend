@@ -22,8 +22,9 @@ public class SeasonalPushService {
     public SeasonalBannerResponse getSeasonalBanner(Long userId) {
         LocalDate today = LocalDate.now();
         Season currentSeason = Season.from(today.getMonthValue());
+        int currentYear = today.getYear();
 
-        return seasonalPushJpaRepository.findByUserIdAndSeason(userId, currentSeason)
+        return seasonalPushJpaRepository.findByUserIdAndSeasonAndYear(userId, currentSeason, currentYear)
                 .filter(h -> h.getConfirmedAt() == null)
                 .filter(h -> timeCapsuleJpaRepository.existsById(h.getTimeCapsuleId()))
                 .map(h -> SeasonalBannerResponse.builder()

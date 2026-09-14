@@ -151,8 +151,9 @@ public class TimeCapsuleService {
     public void confirmIfMatches(Long userId, Long capsuleId) {
         LocalDate today = LocalDate.now();
         Season currentSeason = Season.from(today.getMonthValue());
+        int currentYear = today.getYear();
 
-        seasonalPushJpaRepository.findByUserIdAndSeason(userId, currentSeason)
+        seasonalPushJpaRepository.findByUserIdAndSeasonAndYear(userId, currentSeason, currentYear)
                 .filter(h -> h.getConfirmedAt() == null)
                 .filter(h -> h.getTimeCapsuleId().equals(capsuleId))
                 .ifPresent(SeasonalPush::confirm);
