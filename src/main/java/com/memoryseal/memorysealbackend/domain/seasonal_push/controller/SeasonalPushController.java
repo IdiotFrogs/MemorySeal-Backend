@@ -47,10 +47,7 @@ public class SeasonalPushController {
     }
 
     @Operation(summary = "계절 배너 조회")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "성공"),
-            @ApiResponse(responseCode = "204", description = "배너 없음")
-    })
+    @ApiResponse(responseCode = "200", description = "성공")
     @GetMapping("/banners/seasonal")
     public ResponseEntity<SeasonalBannerResponse> getSeasonalBanner() {
         SeasonalBannerResponse response = seasonalPushService.getSeasonalBanner(getCurrentUserId());
