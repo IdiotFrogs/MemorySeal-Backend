@@ -3,6 +3,9 @@ package com.memoryseal.memorysealbackend.domain.time_capsule.service;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
+import com.memoryseal.memorysealbackend.domain.seasonal_push.entity.Season;
+import com.memoryseal.memorysealbackend.domain.seasonal_push.entity.SeasonalPush;
+import com.memoryseal.memorysealbackend.domain.seasonal_push.repository.SeasonalPushJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.*;
@@ -46,6 +49,7 @@ public class TimeCapsuleService {
     private final ContributorJpaRepository contributorJpaRepository;
     private final ContentJpaRepository contentJpaRepository;
     private final WateringJpaRepository wateringJpaRepository;
+    private final SeasonalPushJpaRepository seasonalPushJpaRepository;
     private final S3Service s3Service;
 
     private Long getCurrentUserId() {
@@ -108,6 +112,7 @@ public class TimeCapsuleService {
         }
     }
 
+    @Transactional
     public TimeCapsuleResponseDto getDetail(Long id) {
         Long currentUserId = getCurrentUserId();
         Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, id)
@@ -115,6 +120,8 @@ public class TimeCapsuleService {
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(id).orElseThrow(
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
+
+        confirmIfMatches(currentUserId, id);
 
         List<TimeCapsuleContent> myContents = contentJpaRepository.findByTimeCapsuleIdAndUserId(id, currentUserId);
 
@@ -138,6 +145,17 @@ public class TimeCapsuleService {
                 .myContentCount(myContentCount)
                 .myImageCount(myImageCount)
                 .build();
+    }
+
+    @Transactional
+    public void confirmIfMatches(Long userId, Long capsuleId) {
+        LocalDate today = LocalDate.now();
+        Season currentSeason = Season.from(today.getMonthValue());
+
+        seasonalPushJpaRepository.findByUserIdAndSeason(userId, currentSeason)
+                .filter(h -> h.getConfirmedAt() == null)
+                .filter(h -> h.getTimeCapsuleId().equals(capsuleId))
+                .ifPresent(SeasonalPush::confirm);
     }
 
     public Page<TimeCapsuleNameDto> getMyTimeCapsule(TimeCapsuleStatus status, Pageable pageable) {
