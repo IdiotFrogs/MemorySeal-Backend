@@ -3,6 +3,9 @@ package com.memoryseal.memorysealbackend.domain.time_capsule.service;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.Contributor;
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.contributor.repository.ContributorJpaRepository;
+import com.memoryseal.memorysealbackend.domain.seasonal_push.entity.Season;
+import com.memoryseal.memorysealbackend.domain.seasonal_push.entity.SeasonalPush;
+import com.memoryseal.memorysealbackend.domain.seasonal_push.repository.SeasonalPushJpaRepository;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.*;
@@ -29,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,6 +50,7 @@ public class TimeCapsuleService {
     private final ContributorJpaRepository contributorJpaRepository;
     private final ContentJpaRepository contentJpaRepository;
     private final WateringJpaRepository wateringJpaRepository;
+    private final SeasonalPushJpaRepository seasonalPushJpaRepository;
     private final S3Service s3Service;
 
     private Long getCurrentUserId() {
@@ -72,7 +77,7 @@ public class TimeCapsuleService {
         log.info("타임캡슐 생성 시작 - 유저 ID: {}", currentUserId);
 
         try{
-            LocalDate today = LocalDate.now();
+            LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
             TimeCapsule timeCapsule = TimeCapsule.builder()
                     .title(timeCapsuleCreateDto.getTitle())
                     .description(timeCapsuleCreateDto.getDescription())
@@ -108,6 +113,7 @@ public class TimeCapsuleService {
         }
     }
 
+    @Transactional
     public TimeCapsuleResponseDto getDetail(Long id) {
         Long currentUserId = getCurrentUserId();
         Contributor contributor = contributorJpaRepository.findByUserIdAndTimeCapsuleId(currentUserId, id)
@@ -115,6 +121,8 @@ public class TimeCapsuleService {
         TimeCapsule timeCapsule = timeCapsuleJpaRepository.findById(id).orElseThrow(
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
+
+        confirmIfMatches(currentUserId, id);
 
         List<TimeCapsuleContent> myContents = contentJpaRepository.findByTimeCapsuleIdAndUserId(id, currentUserId);
 
@@ -138,6 +146,18 @@ public class TimeCapsuleService {
                 .myContentCount(myContentCount)
                 .myImageCount(myImageCount)
                 .build();
+    }
+
+    @Transactional
+    public void confirmIfMatches(Long userId, Long capsuleId) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        Season currentSeason = Season.from(today.getMonthValue());
+        int currentYear = today.getYear();
+
+        seasonalPushJpaRepository.findByUserIdAndSeasonAndYear(userId, currentSeason, currentYear)
+                .filter(h -> h.getConfirmedAt() == null)
+                .filter(h -> h.getTimeCapsuleId().equals(capsuleId))
+                .ifPresent(SeasonalPush::confirm);
     }
 
     public Page<TimeCapsuleNameDto> getMyTimeCapsule(TimeCapsuleStatus status, Pageable pageable) {
@@ -241,7 +261,7 @@ public class TimeCapsuleService {
             }
         }
 
-        timeCapsule.setUpdatedAt(LocalDate.now());
+        timeCapsule.setUpdatedAt(LocalDate.now(ZoneId.of("Asia/Seoul")));
 
         if(mainImage != null && !mainImage.isEmpty()) {
             log.info("이미지 업로드 시도: {}", mainImage.getOriginalFilename());

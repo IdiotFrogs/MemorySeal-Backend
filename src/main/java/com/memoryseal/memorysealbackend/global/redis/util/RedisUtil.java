@@ -7,9 +7,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.Optional;
 
 @Component
@@ -42,7 +40,7 @@ public class RedisUtil {
     }
 
     public static long toTomorrow() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         final LocalDateTime tomorrow = now.plusDays(1);
         final Long secondsUntilTomorrow = tomorrow.toEpochSecond(ZoneOffset.UTC);
         return secondsUntilTomorrow * 1000;

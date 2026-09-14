@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Getter
 @Builder
@@ -30,7 +32,7 @@ public class ErrorResponse {
         return ResponseEntity
                 .status(errorCode.getStatus())
                 .body(ErrorResponse.builder()
-                        .timestamp(LocalDateTime.now())
+                        .timestamp(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                         .status(errorCode.getStatus().value())
                         .error(errorCode.name())
                         .message(errorCode.getMessage())
