@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -17,4 +18,6 @@ public interface SeasonalPushJpaRepository extends JpaRepository<SeasonalPush, L
     @Query("SELECT p.userId FROM SeasonalPush p " + "WHERE p.season = :season AND p.year = :year")
     Set<Long> findAlreadySentUserIds(@Param("season") Season season,
                                      @Param("year") Integer year);
+
+    Optional<SeasonalPush> findByUserIdAndSeason(Long userId, Season season);
 }

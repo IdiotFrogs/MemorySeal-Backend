@@ -1,0 +1,36 @@
+package com.memoryseal.memorysealbackend.domain.seasonal_push.service;
+
+import com.memoryseal.memorysealbackend.domain.seasonal_push.controller.dto.res.SeasonalBannerResponse;
+import com.memoryseal.memorysealbackend.domain.seasonal_push.entity.Season;
+import com.memoryseal.memorysealbackend.domain.seasonal_push.repository.SeasonalPushJpaRepository;
+import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsuleJpaRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+@Slf4j
+public class SeasonalPushService {
+    private final SeasonalPushJpaRepository seasonalPushJpaRepository;
+    private final TimeCapsuleJpaRepository timeCapsuleJpaRepository;
+
+    public SeasonalBannerResponse getSeasonalBanner(Long userId) {
+        LocalDate today = LocalDate.now();
+        Season currentSeason = Season.from(today.getMonthValue());
+
+        return seasonalPushJpaRepository.findByUserIdAndSeason(userId, currentSeason)
+                .filter(h -> h.getConfirmedAt() == null)
+                .filter(h -> timeCapsuleJpaRepository.existsById(h.getTimeCapsuleId()))
+                .map(h -> SeasonalBannerResponse.builder()
+                        .content(currentSeason.getContent())
+                        .season(currentSeason)
+                        .capsuleId(h.getTimeCapsuleId())
+                        .build())
+                .orElse(SeasonalBannerResponse.empty());
+    }
+}
