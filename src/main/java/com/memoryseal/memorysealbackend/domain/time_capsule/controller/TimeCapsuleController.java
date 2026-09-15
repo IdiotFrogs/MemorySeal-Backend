@@ -125,9 +125,9 @@ public class TimeCapsuleController {
     @Operation(summary = "미오픈 타임캡슐 목록 조회")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "성공"),
-            @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+            @ApiResponse(responseCode = "401", description = "로그인 필요",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/time-capsules/{capsuleId}\"}"))),
+                    examples = @ExampleObject(name = "로그인 필요", value = "{\"status\": \"403\", \"error\": \"NEED_LOGIN\", \"message\": \"로그인이 필요합니다.\", \"path\": \"/time-capsules/unopened\"}"))),
     })
     @GetMapping("/unopened")
     public ResponseEntity<List<UnOpenedTimeCapsuleDto>> getUnopenedTimeCapsules() {
