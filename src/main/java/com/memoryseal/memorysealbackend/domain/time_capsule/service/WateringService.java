@@ -102,8 +102,11 @@ public class WateringService {
 
         long wateringCount = wateringJpaRepository.countByTimeCapsuleId(capsuleId);
 
-        double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;
-        int stage = Math.min((int) (percentage / 20) + 1, 5);
+        int stage = 0;
+        if(wateringCount > 0) {
+            double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;
+            stage = Math.min((int) (percentage / 20) + 1, 5);
+        }
 
         List<TimeCapsuleWatering> allWaterings = wateringJpaRepository.findByTimeCapsuleId(capsuleId);
         Map<LocalDate, TimeCapsuleWatering> wateringMap = allWaterings.stream()
