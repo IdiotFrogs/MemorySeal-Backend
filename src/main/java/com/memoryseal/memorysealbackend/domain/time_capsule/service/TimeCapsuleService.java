@@ -239,8 +239,10 @@ public class TimeCapsuleService {
                                 timeCapsule.getOpenedAt()
                         );
                         long wateringCount = wateringCountMap.getOrDefault(timeCapsule.getId(), 0L);
-                        double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;
-                        stage = Math.min((int) (percentage / 20) + 1, 5);
+                        if(wateringCount > 0) {
+                            double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;
+                            stage = Math.min((int) (percentage / 20) + 1, 5);
+                        }
                     }
 
                     return TimeCapsuleNameDto.builder()
