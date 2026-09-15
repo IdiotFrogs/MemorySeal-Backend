@@ -58,4 +58,7 @@ public class TimeCapsuleResponseDto {
     @Schema(description = "작성한 이미지 개수")
     private int myImageCount;
 
+    @Schema(description = "애니메이션 확인 여부")
+    private boolean animationShown;
+
 }

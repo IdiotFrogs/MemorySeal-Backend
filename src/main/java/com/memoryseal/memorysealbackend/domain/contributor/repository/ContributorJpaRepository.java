@@ -16,13 +16,7 @@ public interface ContributorJpaRepository extends JpaRepository<Contributor, Lon
 
     List<Contributor> findByUserId(Long userId);
 
-    Page<Contributor> findByUserId(Long userId, Pageable pageable);
-
-    List<Contributor> findByUserIdAndContributorRole(Long userId, ContributorRole role);
-
     Optional<Contributor> findByUserIdAndTimeCapsuleId(Long userId, Long timeCapsuleId);
-
-    Optional<Contributor> findByTimeCapsuleIdAndContributorRole(Long timeCapsuleId, ContributorRole role);
 
     boolean existsByTimeCapsuleIdAndUserId(Long timecapsuleId, Long userId);
 
@@ -31,4 +25,6 @@ public interface ContributorJpaRepository extends JpaRepository<Contributor, Lon
     Page<Contributor> findByTimeCapsuleId(Long timeCapsuleId, Pageable pageable);
 
     Page<Contributor> findByTimeCapsuleIdAndUserIdIn(Long timeCapsuleId, List<Long> userIds, Pageable pageable);
+
+    List<Contributor> findByUserIdAndAnimationShownFalse(Long userId);
 }

@@ -122,6 +122,11 @@ public class TimeCapsuleService {
                 () -> new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND)
         );
 
+        boolean animationShown = contributor.isAnimationShown();
+        if(timeCapsule.getTimeCapsuleStatus() == TimeCapsuleStatus.OPENED && !animationShown) {
+            contributor.markAnimationShown();
+        }
+
         confirmIfMatches(currentUserId, id);
 
         List<TimeCapsuleContent> myContents = contentJpaRepository.findByTimeCapsuleIdAndUserId(id, currentUserId);
@@ -145,6 +150,7 @@ public class TimeCapsuleService {
                 .userRole(contributor.getContributorRole())
                 .myContentCount(myContentCount)
                 .myImageCount(myImageCount)
+                .animationShown(animationShown)
                 .build();
     }
 
@@ -158,6 +164,30 @@ public class TimeCapsuleService {
                 .filter(h -> h.getConfirmedAt() == null)
                 .filter(h -> h.getTimeCapsuleId().equals(capsuleId))
                 .ifPresent(SeasonalPush::confirm);
+    }
+
+    public List<UnOpenedTimeCapsuleDto> getUnOpenedTimeCapsule() {
+        Long currentUserId = getCurrentUserId();
+        List<Contributor> contributors = contributorJpaRepository.findByUserIdAndAnimationShownFalse(currentUserId);
+
+        if(contributors.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> candidateIds = contributors.stream()
+                .map(Contributor::getTimeCapsuleId)
+                .toList();
+
+        List<TimeCapsule> openedTimeCapsules = timeCapsuleJpaRepository.findByIdInAndTimeCapsuleStatus(candidateIds, TimeCapsuleStatus.OPENED);
+
+        return openedTimeCapsules.stream()
+                .map(timeCapsule -> UnOpenedTimeCapsuleDto.builder()
+                        .timeCapsuleId(timeCapsule.getId())
+                        .title(timeCapsule.getTitle())
+                        .openedAt(timeCapsule.getOpenedAt())
+                        .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
+                        .build())
+                .toList();
     }
 
     public Page<TimeCapsuleNameDto> getMyTimeCapsule(TimeCapsuleStatus status, Pageable pageable) {

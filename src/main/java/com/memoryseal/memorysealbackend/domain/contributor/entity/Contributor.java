@@ -24,4 +24,11 @@ public class Contributor {
 
     @Column(name = "time_capsule_id", nullable = false)
     private Long timeCapsuleId;
+
+    @Column(name = "animation_shown",  nullable = false)
+    private boolean animationShown = false;
+
+    public void markAnimationShown() {
+        this.animationShown = true;
+    }
 }
