@@ -4,10 +4,7 @@ import com.memoryseal.memorysealbackend.domain.contributor.controller.dto.res.Pa
 import com.memoryseal.memorysealbackend.domain.contributor.entity.ContributorRole;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleCreateDto;
 import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.req.TimeCapsuleUpdateDto;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleCreateResDto;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleNameDto;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleResponseDto;
-import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.TimeCapsuleUpdateResDto;
+import com.memoryseal.memorysealbackend.domain.time_capsule.controller.dto.res.*;
 import com.memoryseal.memorysealbackend.domain.time_capsule.entity.TimeCapsuleStatus;
 import com.memoryseal.memorysealbackend.domain.time_capsule.service.TimeCapsuleService;
 import com.memoryseal.memorysealbackend.global.error.ErrorResponse;
@@ -123,6 +120,18 @@ public class TimeCapsuleController {
             MultipartFile mainImage) throws IOException {
         TimeCapsuleUpdateResDto dto = timeCapsuleService.updateTimeCapsule(capsuleId, timeCapsuleUpdateDto, mainImage);
         return ResponseEntity.ok(dto);
+    }
+
+    @Operation(summary = "미오픈 타임캡슐 목록 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(name = "접근 권한 없음", value = "{\"status\": \"403\", \"error\": \"ACCESS_DENIED\", \"message\": \"해당 요청을 처리할 권한이 없습니다.\", \"path\": \"/time-capsules/{capsuleId}\"}"))),
+    })
+    @GetMapping("/unopened")
+    public ResponseEntity<List<UnOpenedTimeCapsuleDto>> getUnopenedTimeCapsules() {
+        return ResponseEntity.ok(timeCapsuleService.getUnOpenedTimeCapsule());
     }
 
     @Operation(summary = "내 타임캡슐 목록 조회")
