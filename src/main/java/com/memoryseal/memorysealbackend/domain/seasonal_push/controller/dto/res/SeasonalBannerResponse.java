@@ -20,6 +20,10 @@ public class SeasonalBannerResponse {
     private String content;
     @Schema(description = "계절")
     private Season season;
+    @Schema(description = "타임캡슐 제목")
+    private String title;
+    @Schema(description = "타임캡슐 메인 이미지 URL")
+    private String mainImageUrl;
     @Schema(description = "타임캡슐 ID")
     private Long capsuleId;
 

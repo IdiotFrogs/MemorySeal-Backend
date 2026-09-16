@@ -27,11 +27,13 @@ public class SeasonalPushService {
 
         return seasonalPushJpaRepository.findByUserIdAndSeasonAndYear(userId, currentSeason, currentYear)
                 .filter(h -> h.getConfirmedAt() == null)
-                .filter(h -> timeCapsuleJpaRepository.existsById(h.getTimeCapsuleId()))
-                .map(h -> SeasonalBannerResponse.builder()
+                .flatMap(h -> timeCapsuleJpaRepository.findById(h.getTimeCapsuleId()))
+                .map(timeCapsule -> SeasonalBannerResponse.builder()
                         .content(currentSeason.getContent())
                         .season(currentSeason)
-                        .capsuleId(h.getTimeCapsuleId())
+                        .capsuleId(timeCapsule.getId())
+                        .title(timeCapsule.getTitle())
+                        .mainImageUrl(timeCapsule.getMainImage().getFileUrl())
                         .build())
                 .orElse(SeasonalBannerResponse.empty());
     }
