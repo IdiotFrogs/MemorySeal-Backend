@@ -26,4 +26,7 @@ public class UnOpenedTimeCapsuleDto {
 
     @Schema(description = "타임캡슐 대표 이미지 URL")
     private String mainImageUrl;
+
+    @Schema(description = "물주기 단계")
+    private int stage;
 }
