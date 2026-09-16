@@ -232,7 +232,7 @@ public class TimeCapsuleService {
                         throw new AuthException(ErrorCode.TIMECAPSULE_NOT_FOUND);
                     }
 
-                    int stage = 0;
+                    int stage = 1;
                     if(timeCapsule.getBuriedAt() != null && timeCapsule.getOpenedAt() != null) {
                         long totalDays = ChronoUnit.DAYS.between(
                                 timeCapsule.getBuriedAt(),
@@ -241,7 +241,7 @@ public class TimeCapsuleService {
                         long wateringCount = wateringCountMap.getOrDefault(timeCapsule.getId(), 0L);
                         if(wateringCount > 0) {
                             double percentage = totalDays == 0 ? 0 : (double) wateringCount / totalDays * 100;
-                            stage = Math.min((int) (percentage / 20) + 1, 5);
+                            stage = Math.min((int) Math.ceil(percentage / 25) + 1, 5);
                         }
                     }
 
