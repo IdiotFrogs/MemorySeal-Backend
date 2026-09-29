@@ -29,7 +29,7 @@ public class JwtUtil {
 
     public GeneratedToken generateToken(String email, String role, String provider) {
         Long now = new Date().getTime();
-        Long accessTokenPeriod = 1000L * 60L * 30L;
+        Long accessTokenPeriod = 1000L * 60L * 60L * 24L;
         //Long refreshTokenPeriod = 1000L * 60L * 60L * 24L * 14;
         String refreshToken = generateRefreshToken(email, role, provider);
         String accessToken = generateAccessToken(email, role, provider);
