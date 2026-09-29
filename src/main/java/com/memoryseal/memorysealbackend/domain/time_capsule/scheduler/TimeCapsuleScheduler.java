@@ -8,15 +8,13 @@ import com.memoryseal.memorysealbackend.domain.time_capsule.repository.TimeCapsu
 import com.memoryseal.memorysealbackend.domain.user.entity.User;
 import com.memoryseal.memorysealbackend.domain.user.repository.UserJpaRepository;
 import com.memoryseal.memorysealbackend.global.FCM.FCMService;
-import com.memoryseal.memorysealbackend.global.error.ErrorCode;
-import com.memoryseal.memorysealbackend.global.error.Exception.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -31,34 +29,50 @@ public class TimeCapsuleScheduler {
     private final UserJpaRepository userJpaRepository;
     private final FCMService fcmService;
 
+    @Transactional
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void sendOpenNotification() {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
-        List<TimeCapsule> capsules = timeCapsuleJpaRepository
-                .findByOpenedAtAndTimeCapsuleStatus(
-                        today,
-                        TimeCapsuleStatus.BURIED
-                );
+        List<TimeCapsule> capsules = timeCapsuleJpaRepository.findByOpenedAtAndTimeCapsuleStatus(today, TimeCapsuleStatus.BURIED);
+
+        if(capsules.isEmpty()) {
+            return;
+        }
+
+        capsules.forEach(capsule -> capsule.setTimeCapsuleStatus(TimeCapsuleStatus.OPENED));
+
+        List<Long> capsuleIds = capsules.stream()
+                .map(TimeCapsule::getId)
+                .toList();
+
+        List<Contributor> allContributors = contributorJpaRepository.findByTimeCapsuleIdIn(capsuleIds);
+
+        Map<Long, List<Contributor>> contributorByCapsuleId = allContributors.stream()
+                        .collect(Collectors.groupingBy(Contributor::getTimeCapsuleId));
+
+        List<Long> userIds = allContributors.stream()
+                        .map(Contributor::getUserId)
+                        .distinct()
+                        .toList();
+
+        Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
+                        .collect(Collectors.toMap(User::getId, u -> u));
 
         capsules.forEach(capsule -> {
-            capsule.setTimeCapsuleStatus(TimeCapsuleStatus.OPENED);
-
-            List<Contributor> contributors = contributorJpaRepository
-                    .findByTimeCapsuleId(capsule.getId());
-
-            List<Long> userIds = contributors.stream()
-                            .map(Contributor::getUserId)
-                            .toList();
-
-            Map<Long, User> userMap = userJpaRepository.findAllById(userIds).stream()
-                    .collect(Collectors.toMap(User::getId, u -> u));
-
-            userMap.values().forEach(user ->
-                    fcmService.sendOpenedNotification(user.getFcmToken(),capsule.getTitle(), capsule.getId()));
+            List<Contributor> contributors = contributorByCapsuleId.getOrDefault(capsule.getId(), List.of());
+            contributors.forEach(contributor -> {
+                User user = userMap.get(contributor.getUserId());
+                if(user == null || user.getFcmToken() == null) {
+                    return;
+                }
+                try {
+                    fcmService.sendOpenedNotification(user.getFcmToken(), capsule.getTitle(), capsule.getId());
+                }catch (Exception e) {
+                    log.warn("알림 발송 실패: userId={}, capsuleId={}", user.getId(), capsule.getId(), e);
+                }
+            });
         });
-
-        timeCapsuleJpaRepository.saveAll(capsules);
         log.info("타임캡슐 오픈 알림 전송 완료: {}개", capsules.size());
     }
 }

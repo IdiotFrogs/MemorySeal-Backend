@@ -12,13 +12,13 @@ import java.util.Optional;
 
 @Repository
 public interface ContributorJpaRepository extends JpaRepository<Contributor, Long> {
-    List<Contributor> findByTimeCapsuleId(Long TimeCapsuleId);
+    List<Contributor> findByTimeCapsuleId(Long timeCapsuleId);
 
     List<Contributor> findByUserId(Long userId);
 
     Optional<Contributor> findByUserIdAndTimeCapsuleId(Long userId, Long timeCapsuleId);
 
-    boolean existsByTimeCapsuleIdAndUserId(Long timecapsuleId, Long userId);
+    boolean existsByTimeCapsuleIdAndUserId(Long timeCapsuleId, Long userId);
 
     void deleteByTimeCapsuleId(Long timeCapsuleId);
 
@@ -27,4 +27,6 @@ public interface ContributorJpaRepository extends JpaRepository<Contributor, Lon
     Page<Contributor> findByTimeCapsuleIdAndUserIdIn(Long timeCapsuleId, List<Long> userIds, Pageable pageable);
 
     List<Contributor> findByUserIdAndAnimationShownFalse(Long userId);
+
+    List<Contributor> findByTimeCapsuleIdIn(List<Long> timeCapsuleIds);
 }
