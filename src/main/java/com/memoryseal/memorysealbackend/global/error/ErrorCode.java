@@ -24,6 +24,7 @@ public enum ErrorCode {
     INVALID_FCM_TOKEN(HttpStatus.BAD_REQUEST, "유효하지 않은 FCM 토큰입니다."),
     NOT_TIMECAPSULE_BURIED(HttpStatus.BAD_REQUEST, "묻힌 상태의 타임캡슐이 아닙니다."),
     INVALID_SORT_DIRECTION(HttpStatus.BAD_REQUEST, "정렬 방향은 asc 또는 desc만 가능합니다."),
+    CANNOT_DELEGATE_TO_WITHDRAWN_USER(HttpStatus.BAD_REQUEST, "탈퇴한 사용자에게는 방장을 위임할 수 없습니다."),
 
     // 401 UnAuthorized
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
