@@ -233,6 +233,11 @@ public class ContributorService {
                 .findByUserIdAndTimeCapsuleId(targetUserId, capsuleId)
                 .orElseThrow(() -> new AuthException(ErrorCode.NOT_A_CONTRIBUTOR));
 
+        boolean isActive = userJpaRepository.existsByIdAndUserActiveStatus(targetUserId,true);
+        if(!isActive) {
+            throw new AuthException(ErrorCode.CANNOT_DELEGATE_TO_WITHDRAWN_USER);
+        }
+
         host.setContributorRole(ContributorRole.CONTRIBUTOR);
         targetContributor.setContributorRole(ContributorRole.HOST);
 
